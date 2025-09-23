@@ -44,6 +44,14 @@ def run_selection_accuracy_test():
     selection_test_main()
 
 
+def run_pipeline_accuracy_test():
+    """Run the complete pipeline accuracy integration test."""
+    print("Running Pipeline Accuracy Test...")
+    from tests.integration.test_pipeline_accuracy import main as pipeline_test_main
+
+    pipeline_test_main()
+
+
 def run_all_tests():
     """Run all available tests."""
     print("Running All Tests")
@@ -58,9 +66,15 @@ def run_all_tests():
     run_selection_accuracy_test()
 
     print("\n" + "=" * 60)
+
+    # Run pipeline accuracy test
+    run_pipeline_accuracy_test()
+
+    print("\n" + "=" * 60)
     print("All test results have been saved to JSON files in tests/results/")
     print("   - Narrowing results: tests/results/narrowing/")
     print("   - Selection results: tests/results/selection/")
+    print("   - Pipeline results: tests/results/pipeline/")
     print("   Use these files for detailed analysis and comparison across test runs.")
 
 
@@ -76,6 +90,8 @@ def main():
 
     parser.add_argument("--selection-accuracy", action="store_true", help="Run selection accuracy tests")
 
+    parser.add_argument("--pipeline-accuracy", action="store_true", help="Run complete pipeline accuracy tests")
+
     parser.add_argument("--all", action="store_true", help="Run all available tests")
 
     args = parser.parse_args()
@@ -84,6 +100,8 @@ def main():
         run_narrowing_accuracy_test()
     elif args.selection_accuracy:
         run_selection_accuracy_test()
+    elif args.pipeline_accuracy:
+        run_pipeline_accuracy_test()
     elif args.all:
         run_all_tests()
     else:

@@ -14,6 +14,8 @@ from pathlib import Path
 
 import dotenv
 
+from src.classification.embeddings import EmbeddingService
+from src.classification.narrowing import HybridNarrowing
 from src.classification.selection import CategorySelector
 from src.data.category_loader import CategoryLoader
 from src.data.models import Category
@@ -54,6 +56,10 @@ class SelectionAccuracyTester:
         self.category_loader = CategoryLoader()
         self.selector = CategorySelector()
         self.categories = self.category_loader.load_categories()
+        
+        # Initialize narrowing strategy to generate candidate categories
+        embedding_service = EmbeddingService()
+        self.narrower = HybridNarrowing(embedding_service=embedding_service)
 
         # Create category lookup for validation
         self.category_lookup = {cat.path: cat for cat in self.categories}
@@ -61,21 +67,6 @@ class SelectionAccuracyTester:
         print(f"Loaded {len(self.categories)} categories for testing")
         print("-" * 60)
 
-    def _get_category_by_path(self, path: str) -> Category:
-        """Get a category by its path.
-
-        Args:
-            path: The category path
-
-        Returns:
-            The category object
-
-        Raises:
-            ValueError: If category is not found
-        """
-        if path not in self.category_lookup:
-            raise ValueError(f"Category not found: {path}")
-        return self.category_lookup[path]
 
     def test_selection(self) -> SelectionResults:
         """Test selection accuracy against all test cases.
@@ -89,23 +80,28 @@ class SelectionAccuracyTester:
         print("=" * 50)
 
         for i, test_case in enumerate(tests, 1):
-            # Get candidate categories from predicted_categories
+            # First, use narrowing to generate candidate categories
             try:
-                candidate_categories = [self._get_category_by_path(path) for path in test_case["predicted_categories"]]
-            except ValueError as e:
-                print(f"❌ Skipping test case {i}: {e}")
+                narrowing_start_time = time.time()
+                candidate_categories = self.narrower.narrow(test_case["text"], self.categories)
+                narrowing_time_ms = (time.time() - narrowing_start_time) * 1000
+            except Exception as e:
+                print(f"❌ Narrowing failed for test case {i}: {e}")
                 continue
 
-            start_time = time.time()
+            if not candidate_categories:
+                print(f"❌ No candidate categories found for test case {i}")
+                continue
 
-            # Run selection
+            # Run selection on the narrowed candidates
             try:
+                selection_start_time = time.time()
                 selected_category = self.selector.select_best_category(test_case["text"], candidate_categories)
+                selection_time_ms = (time.time() - selection_start_time) * 1000
+                processing_time_ms = narrowing_time_ms + selection_time_ms
             except Exception as e:
                 print(f"❌ Selection failed for test case {i}: {e}")
                 continue
-
-            processing_time_ms = (time.time() - start_time) * 1000
 
             # Check if correct category was selected
             expected_category_path = test_case["category"]

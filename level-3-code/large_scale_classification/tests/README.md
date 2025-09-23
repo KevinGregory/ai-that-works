@@ -16,12 +16,15 @@ tests/
 ├── integration/                       # Integration tests
 │   ├── __init__.py
 │   ├── test_narrowing_accuracy.py     # Narrowing strategy accuracy test
-│   └── test_selection_accuracy.py     # Selection accuracy test
+│   ├── test_selection_accuracy.py     # Selection accuracy test
+│   └── test_pipeline_accuracy.py      # Complete pipeline accuracy test
 └── results/                           # JSON test results (auto-generated)
     ├── narrowing/                     # Narrowing test results
     │   └── narrowing_accuracy_YYYYMMDD_HHMMSS.json
-    └── selection/                     # Selection test results
-        └── selection_accuracy_YYYYMMDD_HHMMSS.json
+    ├── selection/                     # Selection test results
+    │   └── selection_accuracy_YYYYMMDD_HHMMSS.json
+    └── pipeline/                      # Pipeline test results
+        └── pipeline_accuracy_YYYYMMDD_HHMMSS.json
 ```
 
 ## Available Tests
@@ -42,7 +45,38 @@ tests/
 - Average processing time
 - Detailed failure analysis
 
-### 2. Test Cases (`data/test_cases.py`)
+### 2. Selection Accuracy Test (`integration/test_selection_accuracy.py`)
+
+**Purpose**: Evaluates how often the correct category is selected by the LLM from the narrowed candidate categories.
+
+**What it tests**:
+- LLM-based category selection from narrowed candidates
+- Processing time and performance metrics
+- Failure analysis for incorrect selections
+
+**Metrics provided**:
+- Selection accuracy percentage (% of tests where correct category was selected)
+- Average number of candidate categories
+- Average processing time
+- Detailed failure analysis
+
+### 3. Pipeline Accuracy Test (`integration/test_pipeline_accuracy.py`)
+
+**Purpose**: Evaluates the complete end-to-end classification pipeline by running the full `classify()` method on all test cases.
+
+**What it tests**:
+- Complete classification pipeline (narrowing + selection)
+- Overall system accuracy
+- Performance breakdown (narrowing vs selection time)
+- Failure analysis by stage (narrowing vs selection errors)
+
+**Metrics provided**:
+- Overall pipeline accuracy percentage
+- Performance breakdown by stage
+- Failure categorization (narrowing vs selection failures)
+- Test type analysis (LLM-generated vs human-generated test cases)
+
+### 4. Test Cases (`data/test_cases.py`)
 
 **Content**: 25 comprehensive test cases covering:
 - All categories in the current `categories.txt` (30 categories)
@@ -65,8 +99,10 @@ tests/
 cd tests
 python run_tests.py
 
-# Run specific test type
+# Run specific test types
 python run_tests.py --narrowing-accuracy
+python run_tests.py --selection-accuracy
+python run_tests.py --pipeline-accuracy
 
 # Run all tests
 python run_tests.py --all
@@ -75,9 +111,11 @@ python run_tests.py --all
 ### Running Tests Directly
 
 ```bash
-# Run narrowing accuracy test directly
+# Run tests directly
 cd tests/integration
 python test_narrowing_accuracy.py
+python test_selection_accuracy.py
+python test_pipeline_accuracy.py
 ```
 
 ## Test Output Example
@@ -172,6 +210,29 @@ All integration tests now automatically save detailed results to JSON files with
 }
 ```
 
+**Pipeline Results**:
+```json
+{
+  "test_info": {
+    "test_type": "pipeline_accuracy",
+    "timestamp": "2025-09-16T14:30:22.123456",
+    "total_test_cases": 25,
+    "narrowing_strategy": "hybrid",
+    "vector_store_enabled": true
+  },
+  "results": {
+    "total_tests": 25,
+    "correct_classifications": 23,
+    "accuracy_percent": 92.0,
+    "avg_narrowed_count": 4.8,
+    "avg_processing_time_ms": 520.5,
+    "avg_narrowing_time_ms": 340.2,
+    "avg_selection_time_ms": 180.3,
+    "individual_results": [...]
+  }
+}
+```
+
 ### Comparing Results Across Runs
 
 Use the `compare_results.py` utility to analyze changes between test runs:
@@ -185,6 +246,9 @@ python tests/compare_results.py --narrowing file1.json file2.json
 
 # Compare two selection accuracy results
 python tests/compare_results.py --selection file1.json file2.json
+
+# Compare two pipeline accuracy results
+python tests/compare_results.py --pipeline file1.json file2.json
 ```
 
 **Example comparison output**:
@@ -231,11 +295,11 @@ Hybrid: 355.1ms → 340.2ms (🟢 -14.9ms)
 
 **Planned test additions**:
 - Unit tests for individual components
-- End-to-end pipeline tests
 - Performance benchmarks
 - Load testing
 - Category hierarchy validation tests
 - BAML integration tests
+- Regression testing framework
 
 ## Dependencies
 

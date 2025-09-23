@@ -13,257 +13,348 @@ class TestCase(TypedDict):
 
     text: str
     category: str
-    predicted_categories: list[str]
+    test_type: str
 
 
 tests: list[TestCase] = [
     {
         "text": "Samsung Counter-Depth 17.5-cu ft 3-Door Smart Compatible French Door Refrigerator with Ice Maker (Fingerprint Resistant Matte Black Steel) ENERGY STAR Certified",
         "category": "/Appliances/Refrigerators/French Door Refrigerators",
-        "predicted_categories": [
-            "/Appliances/Refrigerators/French Door Refrigerators",
-            "/Appliances/Refrigerators",
-            "/Appliances/Dishwashers",
-            "/Appliances/Garbage Disposals",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": 'Bosch 800 Series 24" Stainless Steel Built-In Dishwasher with Third Rack and CrystalDry Technology',
         "category": "/Appliances/Dishwashers/Built-In Dishwashers",
-        "predicted_categories": [
-            "/Appliances/Dishwashers/Built-In Dishwashers",
-            "/Appliances/Dishwashers/Countertop Dishwashers",
-            "/Appliances/Dishwashers/Portable Dishwashers",
-            "/Appliances/Dishwashers",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "BLACK+DECKER 6-Place Setting Compact Countertop Dishwasher in White",
         "category": "/Appliances/Dishwashers/Countertop Dishwashers",
-        "predicted_categories": [
-            "/Appliances/Dishwashers/Countertop Dishwashers",
-            "/Appliances/Dishwashers/Portable Dishwashers",
-            "/Appliances/Dishwashers",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "GE Portable Dishwasher with Stainless Steel Interior and Wheels",
         "category": "/Appliances/Dishwashers/Portable Dishwashers",
-        "predicted_categories": [
-            "/Appliances/Dishwashers/Portable Dishwashers",
-            "/Appliances/Dishwashers/Countertop Dishwashers",
-            "/Appliances/Dishwashers/Built-In Dishwashers",
-            "/Appliances/Dishwashers",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Hobart LXER-2 Undercounter Commercial Dishwasher with Built-in Booster Heater",
         "category": "/Appliances/Dishwashers/Commercial Dishwashers",
-        "predicted_categories": [
-            "/Appliances/Dishwashers/Commercial Dishwashers",
-            "/Appliances/Dishwashers",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "InSinkErator Evolution Compact 3/4 HP Garbage Disposal with SoundSeal Technology",
         "category": "/Appliances/Garbage Disposals",
-        "predicted_categories": [
-            "/Appliances/Garbage Disposals",
-            "/Appliances/Appliance Parts/Garbage Disposal Parts",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Whirlpool Dishwasher Upper Dish Rack Assembly W10350375",
         "category": "/Appliances/Appliance Parts/Dishwasher Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Dishwasher Parts",
-            "/Appliances/Appliance Parts/Small Appliance Parts",
-            "/Appliances/Appliance Parts/Refrigerator Parts",
-            "/Appliances/Appliance Parts",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "KitchenAid Stand Mixer Bowl Lift Lever and Spring Assembly",
         "category": "/Appliances/Appliance Parts/Small Appliance Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Small Appliance Parts",
-            "/Appliances/Appliance Parts/Dishwasher Parts",
-            "/Appliances/Appliance Parts/Microwave Parts",
-            "/Appliances/Appliance Parts",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Samsung DA29-00020B HAF-CIN/EXP Refrigerator Water Filter",
         "category": "/Appliances/Appliance Parts/Refrigerator Water Filters",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Refrigerator Water Filters",
-            "/Appliances/Appliance Parts/Refrigerator Air Filters",
-            "/Appliances/Appliance Parts/Refrigerator Parts",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "LG ADQ36006101 Refrigerator Air Filter for French Door Models",
         "category": "/Appliances/Appliance Parts/Refrigerator Air Filters",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Refrigerator Air Filters",
-            "/Appliances/Appliance Parts/Refrigerator Water Filters",
-            "/Appliances/Appliance Parts/Refrigerator Parts",
-            "/Appliances/Appliance Parts",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "GE WR17X12633 Refrigerator Ice Maker Assembly",
         "category": "/Appliances/Appliance Parts/Refrigerator Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Refrigerator Parts",
-            "/Appliances/Appliance Parts/Ice Maker Kits",
-            "/Appliances/Appliance Parts",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": 'Broan-NuTone Range Hood Grease Filter 11-3/4" x 14-1/4" Aluminum',
         "category": "/Appliances/Appliance Parts/Range Hood Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Range Hood Parts",
-            "/Appliances/Appliance Parts/Oven Parts",
-            "/Appliances/Appliance Parts/Cooktop Parts",
-            "/Appliances/Appliance Parts",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Frigidaire 316075103 Oven Bake Element 2500 Watts",
         "category": "/Appliances/Appliance Parts/Oven Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Oven Parts",
-            "/Appliances/Appliance Parts/Range Hood Parts",
-            "/Appliances/Appliance Parts/Stove Parts",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "InSinkErator Garbage Disposal Splash Guard and Stopper",
         "category": "/Appliances/Appliance Parts/Garbage Disposal Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Garbage Disposal Parts",
-            "/Appliances/Garbage Disposals",
-            "/Appliances/Appliance Parts/Small Appliance Parts",
-            "/Appliances/Appliance Parts",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Sharp Carousel Microwave Glass Turntable Plate 12.5 Inch",
         "category": "/Appliances/Appliance Parts/Microwave Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Microwave Parts",
-            "/Appliances/Appliance Parts/Small Appliance Parts",
-            "/Appliances/Appliance Parts/Oven Parts",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Whirlpool W10715708 Ice Maker Kit for Top-Freezer Refrigerators",
         "category": "/Appliances/Appliance Parts/Ice Maker Kits",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Ice Maker Kits",
-            "/Appliances/Appliance Parts/Refrigerator Parts",
-            "/Appliances/Appliance Parts",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "GE WB31T10013 Cooktop Burner Drip Pan Set Chrome",
         "category": "/Appliances/Appliance Parts/Cooktop Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Cooktop Parts",
-            "/Appliances/Appliance Parts/Stove Parts",
-            "/Appliances/Appliance Parts",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Whirlpool W10116794 Stove Burner Control Knob Black",
         "category": "/Appliances/Appliance Parts/Stove Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Stove Parts",
-            "/Appliances/Appliance Parts/Cooktop Parts",
-            "/Appliances/Appliance Parts",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Frigidaire 5304505209 Freezer Door Gasket Seal",
         "category": "/Appliances/Appliance Parts/Freezer Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Freezer Parts",
-            "/Appliances/Appliance Parts/Refrigerator Parts",
-            "/Appliances/Appliance Parts",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "NewAir Wine Cooler Replacement Shelves AWR-460DB Set of 6",
         "category": "/Appliances/Appliance Parts/Wine Cooler Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Wine Cooler Parts",
-            "/Appliances/Appliance Parts/Refrigerator Parts",
-            "/Appliances/Appliance Parts/Freezer Parts",
-            "/Appliances/Appliance Parts",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Whirlpool W10837240 Dryer Lint Screen Filter",
         "category": "/Appliances/Appliance Parts/Dryer Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Dryer Parts",
-            "/Appliances/Appliance Parts/Washer and Dryer Stacking Kits",
-            "/Appliances/Appliance Parts/Small Appliance Parts",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "GE WC22X10047 Trash Compactor Bags 15-Pack",
         "category": "/Appliances/Appliance Parts/Trash Compactor Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Trash Compactor Parts",
-            "/Appliances/Appliance Parts/Garbage Disposal Parts",
-            "/Appliances/Appliance Parts/Small Appliance Parts",
-            "/Appliances/Appliance Parts",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Frigidaire 5304505209 Dehumidifier Water Collection Bucket",
         "category": "/Appliances/Appliance Parts/Dehumidifier Parts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Dehumidifier Parts",
-            "/Appliances/Appliance Parts/Small Appliance Parts",
-            "/Appliances/Appliance Parts/Refrigerator Parts",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Samsung SKK-DD Washer Dryer Stacking Kit with Pull-Out Shelf",
         "category": "/Appliances/Appliance Parts/Washer and Dryer Stacking Kits",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Washer and Dryer Stacking Kits",
-            "/Appliances/Appliance Parts/Dryer Parts",
-            "/Appliances/Appliance Parts/Small Appliance Parts",
-            "/Appliances/Appliance Parts",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
     {
         "text": "Shark Navigator Vacuum Belt 2-Pack XB2950",
         "category": "/Appliances/Appliance Parts/Vacuum Parts/Vacuum Belts",
-        "predicted_categories": [
-            "/Appliances/Appliance Parts/Vacuum Parts/Vacuum Belts",
-            "/Appliances/Appliance Parts/Vacuum Parts",
-            "/Appliances/Appliance Parts/Small Appliance Parts",
-            "/Appliances/Appliance Parts",
-            "/Appliances",
-        ],
+        "test_type": "llm_generated",
     },
+    {
+        "text": "Small heating/cooling unit",
+        "category": "/Heating, Venting & Cooling/Mini Split Air Conditioners/Mini Split ACs",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "latex gloves",
+        "category": "/Safety Equipment/Disposable Protective Clothing/Disposable Gloves",
+        "test_type": "human_generated",
+    },    
+    {
+        "text": "flourescent bulbs",
+        "category": "/Lighting/Light Bulbs/CFL Bulbs",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "wall lamp",
+        "category": "/Lighting/Wall Sconces",
+        "test_type": "human_generated",
+    },
+    {
+        "text":"over door shoe rack",
+        "category": "/Storage & Organization/Shoe Storage/Hanging Shoe Organizers",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "ping-pong table",
+        "category": "/Sports & Outdoors/Games/Game Room/Ping Pong Tables",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "eye bolt",
+        "category": "/Hardware/Fasteners/Bolts/Eye Bolts",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "cloth to use under painting to prevent mess",
+        "category": "/Paint/Paint Supplies/Drop Cloths",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "power equipment",
+        "category": "/Outdoors/Outdoor Power Equipment",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "desk shelves",
+        "category": "/Storage & Organization/Office Storage & Organization",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "paddleboard",
+        "category": "/Sports & Outdoors/Boating/Water Sports/Stand Up Paddleboards",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "backyard golf course",
+        "category": "/Sports & Outdoors/Outdoor Sports/Golf Equipment/Putting Greens",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "Stove with red knobs",
+        "category": "/Appliances/Ranges/Gas Ranges/Double Oven Gas Ranges",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "Refrigerator with hidden door with built in ice",
+        "category": "/Appliances/Refrigerators/French Door Refrigerators",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "nest thermostat",
+        "category": "/Smart Home/Smart Devices/Smart Thermostats",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "Silver titanium top load washing machine",
+        "category": "/Appliances/Washers & Dryers/Washing Machines",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "Smeg toaster",
+        "category": "/Appliances/Small Kitchen Appliances/Toasters",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "fire protection document safe",
+        "category": "/Tools/Safety & Security/Safes/Home Safes",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "walkie talkie",
+        "category": "/Electrical/Electronics/Two-Way Radios",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "backyard shed",
+        "category": "/Storage & Organization/Outdoor Storage/Sheds",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "suspenders",
+        "category": "/Workwear/Workwear Accessories/Work Suspenders",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "masking tape",
+        "category": "/Paint/Paint Supplies/Tape/Masking Tape",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "backyard fireplace",
+        "category": "/Outdoors/Outdoor Heating/Outdoor Fireplaces",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "carbon pre-filter",
+        "category": "/Heating, Venting & Cooling/Air Purifiers",
+        "test_type": "human_generated",
+    },
+    {
+        "text": "wire",
+        "category": "/Electrical/Wire",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"Car battery",
+        "category": "/Automotive/Battery Charging Systems/Car Batteries",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"radiator fluid",
+        "category": "/Automotive/Car Fluids & Chemicals",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"Auto Light Bulb",
+        "category": "/Automotive/Auto Parts/Car Lights",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"Step Ladder",
+        "category": "/Building Materials/Ladders/Step Ladders",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"Toilet Flapper Valve",
+        "category": "/Plumbing/Plumbing Parts/Toilet Parts/Toilet Repair Kits",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"Light Bulbs",
+        "category": "/Lighting/Light Bulbs",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"light switch",
+        "category": "/Electrical/Wall Plates/Light Switch Plates",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"bathroom decoration",
+        "category": "/Bath/Bathroom Accessories/Bathroom Decor",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"space heater",
+        "category": "/Heating, Venting & Cooling/Heaters/Space Heaters",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"welding mask/helmet",
+        "category": "/Tools/Welding & Soldering/Welding Safety Apparel/Welding Helmets",
+        "test_type": "human_generated",
+    },    
+    {
+        "text":"natural gas detector",
+        "category": "/Electrical/Fire Safety/Fire Safety Accessories",
+        "test_type": "human_generated",
+    },
+    {
+        "text":"ice maker",
+        "category": "/Appliances/Appliance Parts/Ice Maker Kits",
+        "test_type": "human_generated",
+    },
+    {
+        "text":"microwave in drawer",
+        "category": "/Appliances/Microwaves",
+        "test_type": "human_generated",
+    },
+    {
+        "text":"induction stove",
+        "category": "/Appliances/Cooktops/Induction Cooktops",
+        "test_type": "human_generated",
+    },
+    {
+        "text":"Front loading washing machine",
+        "category": "/Appliances/Washers & Dryers/Washing Machines",
+        "test_type": "human_generated",
+    },
+    {
+        "text":"Toaster oven with airfry",
+        "category": "/Appliances/Small Kitchen Appliances/Toasters",
+        "test_type": "human_generated",
+    },
+    {
+        "text":"rice cooker",
+        "category": "/Appliances/Small Kitchen Appliances/Cookers",
+        "test_type": "human_generated",
+    },
+    {
+        "text":"crockpot",
+        "category": "/Appliances/Small Kitchen Appliances/Cookers",
+        "test_type": "human_generated",
+    }    
 ]

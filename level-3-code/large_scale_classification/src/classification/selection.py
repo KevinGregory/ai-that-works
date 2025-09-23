@@ -1,7 +1,7 @@
 """LLM-based final category selection using BAML."""
 
-from baml_client import b
-from baml_client.type_builder import TypeBuilder
+from src.baml_client import b
+from src.baml_client.type_builder import TypeBuilder
 from src.data.models import Category
 
 

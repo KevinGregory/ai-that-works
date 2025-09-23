@@ -41,3 +41,6 @@ class ClassificationResult(BaseModel):
     candidates: list[Category] = Field(default_factory=list, description="Candidate categories")
     processing_time_ms: float = Field(..., description="Processing time in milliseconds")
     metadata: dict[str, Any] = Field(default_factory=dict, description="Metadata")
+    # Stage information for pipeline analysis
+    embedding_candidates: list[Category] = Field(default_factory=list, description="Categories from embedding stage")
+    llm_candidates: list[Category] = Field(default_factory=list, description="Categories from LLM stage")
