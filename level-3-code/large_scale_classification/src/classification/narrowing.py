@@ -183,7 +183,7 @@ class LLMBasedNarrowing(NarrowingStrategyBase):
         except Exception as e:
             # Return all categories if LLM fails - let the user handle the failure
             self.logger.error(f"LLM narrowing failed: {e}, returning all categories")
-            return categories[:settings.max_narrowed_categories]
+            return categories[: settings.max_narrowed_categories]
 
 
 class HybridNarrowing(NarrowingStrategyBase):

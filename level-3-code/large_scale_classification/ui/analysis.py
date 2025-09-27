@@ -23,6 +23,7 @@ from src.shared.correctness import CorrectnessDefinition, CorrectnessEvaluator
 
 TEST_CASE_DESCRIPTION_DISPLAY_LENGTH = 100
 
+
 def analyze_pipeline_errors(
     ui_data: List[Dict[str, Any]],
     correctness_definition: CorrectnessDefinition = CorrectnessDefinition.EXACT,

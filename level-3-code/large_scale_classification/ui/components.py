@@ -1,4 +1,3 @@
-
 """UI rendering components for the Streamlit application.
 
 This module contains all the Streamlit rendering functions for different
