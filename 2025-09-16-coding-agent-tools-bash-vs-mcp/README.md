@@ -13,6 +13,7 @@ Links:
 
 This episode explores the fundamental trade-offs between using Bash and MCP (Model Control Protocol) for coding agent tool integration. The hosts demonstrate real-world examples comparing token usage, examine the impact on context windows, and share advanced techniques for optimizing coding agent performance.
 
+
 ### Key Topics Covered
 
 - Token efficiency and the downsides of JSON in tool definitions
@@ -23,6 +24,11 @@ This episode explores the fundamental trade-offs between using Bash and MCP (Mod
 - Advanced tricks like .shims for forcing uv instead of python or bun instead of npm
 - Real-world applications and performance optimizations
 - Best practices for using MCPs effectively
+
+## Whiteboards
+
+<img width="2964" height="2290" alt="image" src="https://github.com/user-attachments/assets/12a3f216-60b5-4c0e-883e-f9ec49649348" />
+
 
 ## Key Takeaways
 
