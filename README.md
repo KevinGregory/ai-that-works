@@ -113,12 +113,12 @@ Before joining, get familiar with our toolkit:
           <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold;">PAST</span>
         </div>
         <div style="color: #666; font-size: 13px; margin-bottom: 4px;">2025-10-14</div>
-        <div style="font-size: 16px; line-height: 1.3; margin-bottom: 6px;"><strong>#28</strong>: No Vibes Allowed</div>
+        <div style="font-size: 16px; line-height: 1.3; margin-bottom: 6px;"><strong>#28</strong>: No Vibes Allowed - Live Coding with AI Agents</div>
         <div style="font-size: 13px; color: #666;">
           <a href="https://youtu.be/zNZs19fIDHk">watch</a> • <a href="./2025-10-14-no-vibes-allowed">code</a>
         </div>
       </div>
-    </td><td><div style="padding: 8px 0; line-height: 1.5;">Vaibhav Gupta and Aaron (co-founder, former AWS EC2/Prime Video engineer) dissect Anthropic's detailed post-mortem of three critical bugs that affected their production systems. They explore the technical intricacies of how models select tokens across distributed GPUs, why longer context windows can degrade performance, and how compiler optimizations mixing 16-bit and 32-bit floating-point math led to incorrect token selection. The discussion extends to practical lessons for AI engineers: building observability into AI systems, using "vibe checks" from social media for anomaly detection, and the critical importance of rollback strategies. They also analyze OpenAI's new Agent Builder and the broader trend of visual workflow tools for non-technical users.
+    </td><td><div style="padding: 8px 0; line-height: 1.5;">Vaibhav Gupta and Dex demonstrate the power of AI-assisted coding by implementing a complex timeout feature for BAML (a programming language for AI applications) in a live coding session. Starting from a GitHub issue that had been open since March, they showcase a systematic workflow: specification refinement, codebase research, implementation planning, and phased execution. Using Claude and specialized coding agents, they navigate a 400,000+ line codebase, implementing timeout configurations for HTTP clients including connection timeouts, request timeouts, idle timeouts, and time-to-first-token for streaming responses. The session highlights key practices like context engineering, frequent plan validation, breaking complex features into testable phases, and the importance of reading AI-generated code. In under 3 hours of live coding, they achieve what would typically take 1-2 days of engineering time, successfully implementing parsing, validation, error handling, and Python integration tests.
 </div></td></tr>
 <tr><td>
       <div style="padding: 8px 0;">
