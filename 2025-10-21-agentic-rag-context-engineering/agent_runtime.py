@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from baml_client import types
 from baml_client.async_client import b
 from baml_py.errors import BamlValidationError
+from baml_client.tracing import trace
 
 # Import tool handlers from main
 from main import execute_tool as _execute_tool
@@ -42,6 +43,7 @@ class AgentRuntime:
         self.state = state
         self.callbacks = callbacks or AgentCallbacks()
     
+    # @trace
     async def execute_tool(self, tool: types.AgentTools, depth: int = 0) -> str:
         """Execute a tool, handling sub-agents specially"""
         if tool.action == "Agent":
@@ -49,6 +51,7 @@ class AgentRuntime:
         else:
             return await _execute_tool(tool, self.state.working_dir)
     
+    # @trace
     async def execute_sub_agent(self, tool: types.AgentTool, parent_depth: int) -> str:
         """
         Execute a sub-agent with its own message context using SubAgentLoop.
@@ -139,6 +142,7 @@ class AgentRuntime:
         
         return "Sub-agent reached max iterations"
     
+    # @trace
     async def run_iteration(self, depth: int = 0) -> tuple[bool, Optional[str]]:
         """
         Run one iteration of the agent loop
@@ -176,7 +180,7 @@ class AgentRuntime:
                 else:
                     break # Success!
             except BamlValidationError as e:
-                if not e.raw_output.startswith("```json") and not e.raw_output.startswith("{") and not e.raw_output.startswith("["):
+                if not e.raw_output.startswith("```json") and not e.raw_output.startswith("{") and not e.raw_output.startswith("[") and not e.raw_output.startswith("Tool:"):
                     # Plain text response, treat as reply
                     response = types.ReplyToUser(message=e.raw_output, action="reply_to_user")
                     break
@@ -248,6 +252,7 @@ class AgentRuntime:
         # Unexpected response
         return (True, f"Unexpected response type: {type(response)}")
     
+    # @trace
     async def run_loop(self, user_message: str, max_iterations: int = 999, depth: int = 0) -> str:
         """Run the full agent loop until completion"""
         # Add user message (only at depth 0, sub-agents have their own contexts)

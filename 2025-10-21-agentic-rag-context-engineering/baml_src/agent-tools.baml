@@ -248,6 +248,7 @@ class WebFetchTool {
   "#)
   url string @description("The URL to fetch content from")
   prompt string @description("The prompt to run on the fetched content")
+  save_to_file string? @description("Path to save the fetched content to a file. Defaults to null, which means no file will be saved.")
 }
 
 class TodoItem {
@@ -356,4 +357,4 @@ class WebSearchTool {
 // Union type for all tools
 type ScaryTools =  EditTool | MultiEditTool | WriteTool | NotebookEditTool | TodoWriteTool
 type AgentTools = SubAgentTools | AgentTool
-type SubAgentTools = BashTool | GlobTool | GrepTool | LSTool | ExitPlanModeTool | ReadTool | WebFetchTool | TodoReadTool | TodoWriteTool | WebSearchTool
+type SubAgentTools = BashTool | GlobTool | GrepTool | LSTool | ExitPlanModeTool | ReadTool | WebFetchTool | TodoReadTool | TodoWriteTool | WebSearchTool | ScaryTools

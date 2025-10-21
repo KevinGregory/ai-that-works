@@ -6,7 +6,7 @@ import fnmatch
 import argparse
 import sys
 from pathlib import Path
-from dotenv import load_dotenv  # type: ignore
+from dotenv import load_dotenv
 
 from baml_client import types
 
@@ -379,12 +379,16 @@ def execute_web_fetch(tool: types.WebFetchTool, working_dir: str = ".") -> str:
         # Simple markdown conversion (just cleaning up whitespace)
         lines = [line.strip() for line in text.split('\n') if line.strip()]
         markdown_content = '\n'.join(lines)
+
+        # TODO: call haiku to summarize the content given the query and how its related.
         
         # Truncate if too long
+        truncation_message = ""
         if len(markdown_content) > 10000:
             markdown_content = markdown_content[:10000] + "\n... [truncated]"
+            truncation_message = "if you need more information, call the WebFetch tool again to get the rest of the content with a file path"
         
-        return f"Content from {tool.url}:\n\n{markdown_content}\n\nUser prompt: {tool.prompt}"
+        return f"Content from {tool.url}:\n\n{markdown_content}\n\nUser prompt: {tool.prompt}\n\n{truncation_message}".strip()
     except ImportError:
         return "Error: requests and beautifulsoup4 packages are required for web fetching. Install with: pip install requests beautifulsoup4"
     except Exception as e:
@@ -742,4 +746,5 @@ Examples:
 
 if __name__ == "__main__":
     load_dotenv()
+    print(os.getenv("BOUNDARY_API_KEY"))
     main()
