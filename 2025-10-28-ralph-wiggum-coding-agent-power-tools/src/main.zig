@@ -1,5 +1,5 @@
 const std = @import("std");
-const minibaml = @import("_2025_10_28_ralph_wiggum_coding_");
+const minibaml = @import("minibaml");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};

@@ -1846,6 +1846,11 @@ minibaml gen baml_src --kotlin > generated.kt
   - Comprehensive error messages with fixes
   - Best practices and common patterns
   - Total: 2,216 lines of documentation
+- ✅ Build System Fix (Phase 29)
+  - Fixed executable naming to "minibaml" matching all documentation
+  - Updated build.zig module and executable names
+  - Updated main.zig import statement
+  - Binary now correctly named `zig-out/bin/minibaml`
 - ✅ Project README (Phase 25)
   - Comprehensive README.md (350+ lines) - Project introduction and quick start
   - Installation and prerequisites
@@ -2572,6 +2577,30 @@ client<llm> LoadBalancedClient {
 ```
 
 **Test Results**: ✅ All tests pass - Build Summary: 5/5 steps succeeded; 2/2 tests passed
+
+---
+
+### ✅ PHASE 29: Build System Fix
+**Status**: ✅ COMPLETED
+**Goal**: Fix executable naming in build.zig to match documentation
+
+#### Tasks Completed:
+- [x] 29.1: Fix build.zig module name from directory-based to "minibaml"
+- [x] 29.2: Fix build.zig executable name to "minibaml"
+- [x] 29.3: Update import statement in main.zig
+- [x] 29.4: Rebuild and verify binary works correctly
+- [x] 29.5: Run all tests to ensure no regressions
+
+**Validation**: ✅ PASSED - Binary now correctly named "minibaml" matching all documentation
+
+**Implementation Details**:
+- Fixed build.zig to name the module "minibaml" instead of "_2025_10_28_ralph_wiggum_coding_"
+- Fixed build.zig to name the executable "minibaml" instead of directory-based name
+- Updated main.zig import from `@import("_2025_10_28_ralph_wiggum_coding_")` to `@import("minibaml")`
+- All tests pass (Build Summary: 5/5 steps succeeded; 2/2 tests passed)
+- Binary now correctly named `zig-out/bin/minibaml` matching all documentation and examples
+
+**Test Results**: ✅ All tests pass - Binary works correctly
 
 ---
 
