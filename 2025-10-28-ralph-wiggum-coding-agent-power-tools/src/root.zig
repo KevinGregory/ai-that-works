@@ -34,6 +34,7 @@ pub const TypeScriptGenerator = codegen.TypeScriptGenerator;
 pub const GoGenerator = codegen.GoGenerator;
 pub const RubyGenerator = codegen.RubyGenerator;
 pub const RustGenerator = codegen.RustGenerator;
+pub const ElixirGenerator = codegen.ElixirGenerator;
 pub const MultiFileProject = multifile.MultiFileProject;
 pub const JinjaLexer = jinja.JinjaLexer;
 pub const JinjaParser = jinja.JinjaParser;
