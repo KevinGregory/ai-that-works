@@ -844,7 +844,136 @@ minibaml gen test.baml > models.py
 
 ---
 
-## Current Milestone: PHASE 13 - COMPLETED ✅
+### ✅ PHASE 14: Advanced Jinja Features (Loops and Conditionals)
+**Status**: ✅ COMPLETED
+**Goal**: Implement comprehensive parsing and validation for Jinja control flow statements
+
+#### Tasks Completed:
+- [x] 14.1: Extend JinjaStatement AST to support structured control flow
+  - [x] Create JinjaStatementType enum for discriminating statement types
+  - [x] Create JinjaForStatement struct with loop_var, iterable, and iterable_path
+  - [x] Create JinjaIfStatement struct with condition
+  - [x] Create JinjaEndStatement struct for endfor/endif/else
+  - [x] Convert JinjaStatement to discriminated union
+- [x] 14.2: Implement parser for {% for %} loops with proper syntax parsing
+  - [x] parseForStatement() extracts loop variable and iterable
+  - [x] Support for dot-path iterables (e.g., ctx.client.messages)
+  - [x] Handle {% endfor %} parsing
+- [x] 14.3: Implement parser for {% if %}/{% elif %}/{% else %} conditionals
+  - [x] parseIfStatement() for if and elif with conditions
+  - [x] Handle {% else %} parsing
+  - [x] Handle {% endif %} parsing
+- [x] 14.4: Add validation for balanced statement pairs (for/endfor, if/endif)
+  - [x] Add StatementContext struct for tracking nesting
+  - [x] Add statement_stack to JinjaValidator
+  - [x] Validate matching for/endfor pairs
+  - [x] Validate matching if/elif/else/endif pairs
+  - [x] Check for unclosed blocks at end of validation
+  - [x] Check for unmatched closing tags (endfor without for, etc.)
+- [x] 14.5: Implement loop variable scoping for {% for %} contexts
+  - [x] Add loop_vars HashMap to JinjaValidator
+  - [x] Add loop variables to scope when entering for loop
+  - [x] Remove loop variables from scope when exiting for loop
+  - [x] Validate loop variables are accessible within loop body
+  - [x] Update validateVariable() to check loop_vars
+- [x] 14.6: Add validateIterableReference() for for loops
+  - [x] Check iterable exists in function parameters
+  - [x] Allow built-in iterables (ctx, _)
+  - [x] Report undefined iterable errors with line/column
+- [x] 14.7: Add comprehensive tests for loop and conditional validation (16 new tests)
+  - [x] Test for loop parsing
+  - [x] Test if/elif/else parsing
+  - [x] Test valid for loop with parameters
+  - [x] Test loop variable scoping
+  - [x] Test undefined iterable detection
+  - [x] Test unmatched endfor detection
+  - [x] Test unclosed for loop detection
+  - [x] Test valid if block
+  - [x] Test unmatched endif detection
+  - [x] Test elif without if detection
+  - [x] Test else without opening block detection
+  - [x] Test nested for loops
+  - [x] Test for loop with built-in iterable
+  - [x] Test complete example with loops and conditionals
+
+**Validation**: ✅ PASSED - All 16 new tests pass, all existing tests pass (2/2 test suites)
+
+**Implementation Details**:
+- Extended `src/jinja.zig` from 867 lines to 1,412 lines (+545 lines)
+- Added discriminated union for JinjaStatement with 6 variants:
+  - `for_start`: Contains loop_var, iterable, and iterable_path
+  - `endfor`: Simple end marker with line/column
+  - `if_start`: Contains condition string
+  - `elif`: Contains condition string
+  - `else_block`: Simple marker
+  - `endif`: Simple end marker
+- Enhanced parser with three new functions:
+  - `parseForStatement()`: Parses `{% for x in items %}` syntax
+  - `parseIfStatement()`: Parses `{% if condition %}` and `{% elif condition %}`
+  - Updated `parseStatement()` to dispatch to appropriate parser
+- Enhanced validator with scope tracking:
+  - `StatementContext` struct tracks nesting type (for_loop or if_block)
+  - `statement_stack` tracks open blocks for balance checking
+  - `loop_vars` HashMap tracks variables in scope from for loops
+  - `validateIterableReference()` validates iterable exists
+  - Enhanced `validateVariable()` to check loop_vars
+  - Comprehensive `validateStatement()` with all 6 statement types
+- All validation phases work correctly:
+  - Statement pairing: Validates for/endfor and if/endif are balanced
+  - Scope tracking: Loop variables are added/removed correctly
+  - Reference validation: Iterables and variables are checked
+  - Nesting validation: elif/else must be inside proper blocks
+- Memory safe: All ArrayLists and HashMaps properly initialized and cleaned up
+- Error messages include line/column info for all validation errors
+
+**Sample Validated Templates**:
+```baml
+// Valid for loop
+{% for m in messages %}
+  {{ _.role(m.role) }}
+  {{ m.content }}
+{% endfor %}
+
+// Valid if/elif/else
+{% if condition %}
+  Yes
+{% elif other %}
+  Maybe
+{% else %}
+  No
+{% endif %}
+
+// Nested loops
+{% for outer in items %}
+  {% for inner in outer.children %}
+    {{ inner.name }}
+  {% endfor %}
+{% endfor %}
+
+// Complex example
+{% for m in messages %}
+  {% if show_role %}
+    {{ _.role(m.role) }}
+  {% endif %}
+  {{ m.content }}
+{% endfor %}
+{{ ctx.output_format }}
+```
+
+**Errors Detected**:
+- Undefined iterable: `{% for x in unknown %}`
+- Unmatched endfor: `{% endfor %}` without `{% for %}`
+- Unclosed for: `{% for x in items %}` without `{% endfor %}`
+- Unmatched endif: `{% endif %}` without `{% if %}`
+- elif without if: `{% elif x %}` without prior `{% if %}`
+- else without block: `{% else %}` with no opening statement
+- Wrong block closing: `{% if x %} ... {% endfor %}` (mismatch)
+
+**Test Results**: ✅ All tests pass - Build Summary: 5/5 steps succeeded; 2/2 tests passed
+
+---
+
+## Current Milestone: PHASE 14 - COMPLETED ✅
 
 **Achievements**:
 - ✅ Complete lexer with 150+ test cases
@@ -880,6 +1009,15 @@ minibaml gen test.baml > models.py
   - Supports BAML built-ins (ctx, _)
   - Integrated into validation pipeline
   - 10 comprehensive tests
+- ✅ Advanced Jinja control flow (Phase 14)
+  - Full parsing and validation for {% for %} loops
+  - Full parsing and validation for {% if %}/{% elif %}/{% else %}/{% endif %}
+  - Loop variable scoping with proper scope management
+  - Balanced statement pair validation (matching for/endfor, if/endif)
+  - Iterable reference validation
+  - Unclosed block detection
+  - 16 comprehensive tests for loops and conditionals
+  - 545 lines of enhanced Jinja implementation
 - ✅ TypeBuilder code generation for @@dynamic types (Phase 12.2)
   - Detects @@dynamic attribute on classes and enums
   - Generates DynamicClassBuilder with add_property()
@@ -948,8 +1086,8 @@ minibaml gen test.baml > models.py
 ---
 
 **Next Steps** (Optional Future Enhancements):
-- Advanced Jinja features (loops, conditionals validation)
 - Additional code generators for Go and Ruby
 - Full runtime TypeBuilder integration with function execution
 - Streaming support for LLM function calls
 - Client registry for managing multiple LLM providers
+- Advanced Jinja filter validation and execution

@@ -370,16 +370,56 @@ pub const JinjaVariable = struct {
     }
 };
 
-/// A statement: {% for x in y %}, {% if x %}, etc.
-pub const JinjaStatement = struct {
-    statement_type: []const u8, // "for", "if", "endfor", etc.
-    content: []const u8,
+/// Statement types for control flow
+pub const JinjaStatementType = enum {
+    for_start,
+    endfor,
+    if_start,
+    elif,
+    else_block,
+    endif,
+};
+
+/// For loop statement: {% for x in items %}
+pub const JinjaForStatement = struct {
+    loop_var: []const u8, // "x" from "for x in items"
+    iterable: []const u8, // "items" from "for x in items"
+    iterable_path: std.ArrayList([]const u8), // ["items"] or ["ctx", "client", "provider"]
     line: usize,
     column: usize,
 
+    pub fn deinit(self: *JinjaForStatement, allocator: std.mem.Allocator) void {
+        self.iterable_path.deinit(allocator);
+    }
+};
+
+/// If/elif statement: {% if condition %} or {% elif condition %}
+pub const JinjaIfStatement = struct {
+    condition: []const u8, // Raw condition string
+    line: usize,
+    column: usize,
+};
+
+/// End statement: {% endfor %}, {% endif %}, {% else %}
+pub const JinjaEndStatement = struct {
+    line: usize,
+    column: usize,
+};
+
+/// A statement: {% for x in y %}, {% if x %}, etc.
+pub const JinjaStatement = union(JinjaStatementType) {
+    for_start: JinjaForStatement,
+    endfor: JinjaEndStatement,
+    if_start: JinjaIfStatement,
+    elif: JinjaIfStatement,
+    else_block: JinjaEndStatement,
+    endif: JinjaEndStatement,
+
     pub fn deinit(self: *JinjaStatement, allocator: std.mem.Allocator) void {
-        _ = self;
-        _ = allocator;
+        switch (self.*) {
+            .for_start => |*f| f.deinit(allocator),
+            else => {},
+        }
     }
 };
 
@@ -477,40 +517,187 @@ pub const JinjaParser = struct {
 
     fn parseStatement(self: *JinjaParser, allocator: std.mem.Allocator) !JinjaNode {
         const start_token = self.expect(.statement_start);
-        _ = allocator;
 
-        // Get statement type (for, if, etc.)
-        var statement_type: []const u8 = "";
-        const content_start: usize = self.pos;
-
+        // Get statement type and dispatch to appropriate parser
         if (self.pos < self.tokens.len and self.peek().type == .identifier) {
-            statement_type = self.peek().lexeme;
-            self.advance();
+            const stmt_type = self.peek().lexeme;
+
+            if (std.mem.eql(u8, stmt_type, "for")) {
+                return try self.parseForStatement(allocator, start_token);
+            } else if (std.mem.eql(u8, stmt_type, "endfor")) {
+                self.advance(); // consume "endfor"
+                _ = self.expect(.statement_end);
+                return JinjaNode{
+                    .statement = JinjaStatement{
+                        .endfor = JinjaEndStatement{
+                            .line = start_token.line,
+                            .column = start_token.column,
+                        },
+                    },
+                };
+            } else if (std.mem.eql(u8, stmt_type, "if")) {
+                return try self.parseIfStatement(allocator, start_token, .if_start);
+            } else if (std.mem.eql(u8, stmt_type, "elif")) {
+                return try self.parseIfStatement(allocator, start_token, .elif);
+            } else if (std.mem.eql(u8, stmt_type, "else")) {
+                self.advance(); // consume "else"
+                _ = self.expect(.statement_end);
+                return JinjaNode{
+                    .statement = JinjaStatement{
+                        .else_block = JinjaEndStatement{
+                            .line = start_token.line,
+                            .column = start_token.column,
+                        },
+                    },
+                };
+            } else if (std.mem.eql(u8, stmt_type, "endif")) {
+                self.advance(); // consume "endif"
+                _ = self.expect(.statement_end);
+                return JinjaNode{
+                    .statement = JinjaStatement{
+                        .endif = JinjaEndStatement{
+                            .line = start_token.line,
+                            .column = start_token.column,
+                        },
+                    },
+                };
+            }
         }
 
-        // Skip to end of statement
+        // Unknown statement type - skip to end
         while (self.pos < self.tokens.len and self.peek().type != .statement_end) {
             self.advance();
         }
-
-        const content_end = self.pos;
         if (self.pos < self.tokens.len) {
             _ = self.expect(.statement_end);
         }
 
-        // Build content string from tokens
-        var content: []const u8 = "";
-        if (content_start < content_end and content_start < self.tokens.len) {
-            content = self.tokens[content_start].lexeme;
+        // Return an empty endif as a fallback
+        return JinjaNode{
+            .statement = JinjaStatement{
+                .endif = JinjaEndStatement{
+                    .line = start_token.line,
+                    .column = start_token.column,
+                },
+            },
+        };
+    }
+
+    fn parseForStatement(
+        self: *JinjaParser,
+        allocator: std.mem.Allocator,
+        start_token: JinjaToken,
+    ) !JinjaNode {
+        // Expect: for <loop_var> in <iterable>
+        _ = self.expect(.identifier); // consume "for"
+
+        // Get loop variable
+        var loop_var: []const u8 = "";
+        if (self.pos < self.tokens.len and self.peek().type == .identifier) {
+            loop_var = self.peek().lexeme;
+            self.advance();
         }
+
+        // Expect "in" keyword
+        if (self.pos < self.tokens.len and self.peek().type == .identifier) {
+            const in_token = self.peek();
+            if (!std.mem.eql(u8, in_token.lexeme, "in")) {
+                // Error: expected "in" - skip to end
+                while (self.pos < self.tokens.len and self.peek().type != .statement_end) {
+                    self.advance();
+                }
+                if (self.pos < self.tokens.len) {
+                    _ = self.expect(.statement_end);
+                }
+                return JinjaNode{
+                    .statement = JinjaStatement{
+                        .for_start = JinjaForStatement{
+                            .loop_var = loop_var,
+                            .iterable = "",
+                            .iterable_path = std.ArrayList([]const u8).init(allocator),
+                            .line = start_token.line,
+                            .column = start_token.column,
+                        },
+                    },
+                };
+            }
+            self.advance(); // consume "in"
+        }
+
+        // Parse iterable (could be simple identifier or path like ctx.client.provider)
+        var iterable: []const u8 = "";
+        var iterable_path = std.ArrayList([]const u8).init(allocator);
+        errdefer iterable_path.deinit(allocator);
+
+        if (self.pos < self.tokens.len and self.peek().type == .identifier) {
+            iterable = self.peek().lexeme;
+            try iterable_path.append(allocator, iterable);
+            self.advance();
+
+            // Check for dot-path (e.g., ctx.client.provider)
+            while (self.pos < self.tokens.len and self.peek().type == .dot) {
+                self.advance(); // consume dot
+                if (self.pos < self.tokens.len and self.peek().type == .identifier) {
+                    const next = self.peek();
+                    try iterable_path.append(allocator, next.lexeme);
+                    self.advance();
+                }
+            }
+        }
+
+        _ = self.expect(.statement_end);
 
         return JinjaNode{
             .statement = JinjaStatement{
-                .statement_type = statement_type,
-                .content = content,
-                .line = start_token.line,
-                .column = start_token.column,
+                .for_start = JinjaForStatement{
+                    .loop_var = loop_var,
+                    .iterable = iterable,
+                    .iterable_path = iterable_path,
+                    .line = start_token.line,
+                    .column = start_token.column,
+                },
             },
+        };
+    }
+
+    fn parseIfStatement(
+        self: *JinjaParser,
+        allocator: std.mem.Allocator,
+        start_token: JinjaToken,
+        stmt_type: JinjaStatementType,
+    ) !JinjaNode {
+        _ = self.expect(.identifier); // consume "if" or "elif"
+
+        // Collect condition tokens until statement_end
+        const condition_start = self.pos;
+        var condition_parts = std.ArrayList([]const u8).init(allocator);
+        defer condition_parts.deinit(allocator);
+
+        while (self.pos < self.tokens.len and self.peek().type != .statement_end) {
+            const token = self.peek();
+            try condition_parts.append(allocator, token.lexeme);
+            self.advance();
+        }
+
+        _ = self.expect(.statement_end);
+
+        // Build condition string
+        var condition: []const u8 = "";
+        if (condition_start < self.tokens.len) {
+            condition = self.tokens[condition_start].lexeme;
+        }
+
+        const if_stmt = JinjaIfStatement{
+            .condition = condition,
+            .line = start_token.line,
+            .column = start_token.column,
+        };
+
+        return JinjaNode{
+            .statement = if (stmt_type == .if_start)
+                JinjaStatement{ .if_start = if_stmt }
+            else
+                JinjaStatement{ .elif = if_stmt },
         };
     }
 
@@ -564,11 +751,21 @@ pub const JinjaParser = struct {
     }
 };
 
+/// Statement context for tracking nesting
+pub const StatementContext = struct {
+    type: enum { for_loop, if_block },
+    line: usize,
+    column: usize,
+    loop_var: ?[]const u8, // Only for for_loop
+};
+
 /// Jinja template validator
 pub const JinjaValidator = struct {
     allocator: std.mem.Allocator,
     errors: std.ArrayList(ValidationError),
     param_names: std.StringHashMap(void),
+    statement_stack: std.ArrayList(StatementContext), // Track nesting
+    loop_vars: std.StringHashMap(void), // Track loop variables in scope
 
     pub const ValidationError = struct {
         message: []const u8,
@@ -581,12 +778,16 @@ pub const JinjaValidator = struct {
             .allocator = allocator,
             .errors = std.ArrayList(ValidationError){},
             .param_names = std.StringHashMap(void).init(allocator),
+            .statement_stack = std.ArrayList(StatementContext).init(allocator),
+            .loop_vars = std.StringHashMap(void).init(allocator),
         };
     }
 
     pub fn deinit(self: *JinjaValidator) void {
         self.errors.deinit(self.allocator);
         self.param_names.deinit();
+        self.statement_stack.deinit(self.allocator);
+        self.loop_vars.deinit();
     }
 
     /// Add a parameter name to the list of valid variables
@@ -613,6 +814,18 @@ pub const JinjaValidator = struct {
         for (nodes.items) |*node| {
             try self.validateNode(node);
         }
+
+        // Check for unclosed blocks
+        if (self.statement_stack.items.len > 0) {
+            const unclosed = self.statement_stack.items[0];
+            const block_type = if (unclosed.type == .for_loop) "{% for %}" else "{% if %}";
+            const msg = try std.fmt.allocPrint(
+                self.allocator,
+                "Unclosed {s} block",
+                .{block_type},
+            );
+            try self.addError(msg, unclosed.line, unclosed.column);
+        }
     }
 
     fn validateNode(self: *JinjaValidator, node: *const JinjaNode) !void {
@@ -637,6 +850,11 @@ pub const JinjaValidator = struct {
             return;
         }
 
+        // Check if it's a loop variable
+        if (self.loop_vars.contains(root)) {
+            return; // Loop variables are valid in their scope
+        }
+
         // Check if it's a declared parameter
         if (!self.param_names.contains(root)) {
             const msg = try std.fmt.allocPrint(
@@ -649,9 +867,100 @@ pub const JinjaValidator = struct {
     }
 
     fn validateStatement(self: *JinjaValidator, statement: *const JinjaStatement) !void {
-        // Basic validation for statements
-        if (statement.statement_type.len == 0) {
-            try self.addError("Empty statement", statement.line, statement.column);
+        switch (statement.*) {
+            .for_start => |*for_stmt| {
+                // Validate iterable exists in parameters or is built-in
+                try self.validateIterableReference(for_stmt);
+
+                // Add loop variable to scope
+                try self.loop_vars.put(for_stmt.loop_var, {});
+
+                // Push for_loop onto stack
+                try self.statement_stack.append(self.allocator, StatementContext{
+                    .type = .for_loop,
+                    .line = for_stmt.line,
+                    .column = for_stmt.column,
+                    .loop_var = for_stmt.loop_var,
+                });
+            },
+            .endfor => |*end_stmt| {
+                // Pop statement stack and validate it was a for_loop
+                if (self.statement_stack.items.len == 0) {
+                    try self.addError("Unmatched {% endfor %}", end_stmt.line, end_stmt.column);
+                    return;
+                }
+                const context = self.statement_stack.pop();
+                if (context.type != .for_loop) {
+                    try self.addError("{% endfor %} without matching {% for %}", end_stmt.line, end_stmt.column);
+                }
+
+                // Remove loop variable from scope
+                if (context.loop_var) |loop_var| {
+                    _ = self.loop_vars.remove(loop_var);
+                }
+            },
+            .if_start => |*if_stmt| {
+                // Push if_block onto stack
+                try self.statement_stack.append(self.allocator, StatementContext{
+                    .type = .if_block,
+                    .line = if_stmt.line,
+                    .column = if_stmt.column,
+                    .loop_var = null,
+                });
+            },
+            .elif => |*elif_stmt| {
+                // Validate we're inside an if block
+                if (self.statement_stack.items.len == 0) {
+                    try self.addError("{% elif %} without {% if %}", elif_stmt.line, elif_stmt.column);
+                    return;
+                }
+                const top = self.statement_stack.items[self.statement_stack.items.len - 1];
+                if (top.type != .if_block) {
+                    try self.addError("{% elif %} must be inside {% if %} block", elif_stmt.line, elif_stmt.column);
+                }
+            },
+            .else_block => |*else_stmt| {
+                // Validate we're inside a for or if block
+                if (self.statement_stack.items.len == 0) {
+                    try self.addError("{% else %} without opening block", else_stmt.line, else_stmt.column);
+                }
+            },
+            .endif => |*end_stmt| {
+                // Pop statement stack and validate it was an if_block
+                if (self.statement_stack.items.len == 0) {
+                    try self.addError("Unmatched {% endif %}", end_stmt.line, end_stmt.column);
+                    return;
+                }
+                const context = self.statement_stack.pop();
+                if (context.type != .if_block) {
+                    try self.addError("{% endif %} without matching {% if %}", end_stmt.line, end_stmt.column);
+                }
+            },
+        }
+    }
+
+    fn validateIterableReference(self: *JinjaValidator, for_stmt: *const JinjaForStatement) !void {
+        const root = for_stmt.iterable;
+
+        // Empty iterable
+        if (root.len == 0) {
+            try self.addError("Empty iterable in for loop", for_stmt.line, for_stmt.column);
+            return;
+        }
+
+        // Check for BAML built-ins
+        if (std.mem.eql(u8, root, "ctx") or std.mem.eql(u8, root, "_")) {
+            return;
+        }
+
+        // Check if it's a declared parameter
+        if (!self.param_names.contains(root)) {
+            const msg = try std.fmt.allocPrint(
+                self.allocator,
+                "Undefined iterable '{s}' in for loop - not found in function parameters",
+                .{root},
+            );
+            try self.addError(msg, for_stmt.line, for_stmt.column);
         }
     }
 
@@ -856,6 +1165,243 @@ test "JinjaValidator: complex template with mixed content" {
         \\Extract person from: {{ text }}
         \\Name: {{ p.name }}
         \\
+        \\{{ ctx.output_format }}
+    ,
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    try std.testing.expectEqual(@as(usize, 0), errors.len);
+}
+
+// ===== Loop and Conditional Tests =====
+
+test "JinjaParser: parse for loop" {
+    var lexer = JinjaLexer.init("{% for item in items %}{{ item }}{% endfor %}");
+    var tokens = try lexer.tokenize(std.testing.allocator);
+    defer tokens.deinit();
+
+    var parser = JinjaParser.init(tokens.items);
+    var nodes = try parser.parse(std.testing.allocator);
+    defer {
+        for (nodes.items) |*node| {
+            node.deinit(std.testing.allocator);
+        }
+        nodes.deinit();
+    }
+
+    try std.testing.expectEqual(@as(usize, 3), nodes.items.len);
+    try std.testing.expect(nodes.items[0] == .statement);
+    try std.testing.expect(nodes.items[0].statement == .for_start);
+    try std.testing.expect(nodes.items[1] == .variable);
+    try std.testing.expect(nodes.items[2] == .statement);
+    try std.testing.expect(nodes.items[2].statement == .endfor);
+
+    const for_stmt = nodes.items[0].statement.for_start;
+    try std.testing.expectEqualStrings("item", for_stmt.loop_var);
+    try std.testing.expectEqualStrings("items", for_stmt.iterable);
+}
+
+test "JinjaParser: parse if statement" {
+    var lexer = JinjaLexer.init("{% if condition %}Yes{% endif %}");
+    var tokens = try lexer.tokenize(std.testing.allocator);
+    defer tokens.deinit();
+
+    var parser = JinjaParser.init(tokens.items);
+    var nodes = try parser.parse(std.testing.allocator);
+    defer {
+        for (nodes.items) |*node| {
+            node.deinit(std.testing.allocator);
+        }
+        nodes.deinit();
+    }
+
+    try std.testing.expectEqual(@as(usize, 3), nodes.items.len);
+    try std.testing.expect(nodes.items[0] == .statement);
+    try std.testing.expect(nodes.items[0].statement == .if_start);
+    try std.testing.expect(nodes.items[1] == .text);
+    try std.testing.expect(nodes.items[2] == .statement);
+    try std.testing.expect(nodes.items[2].statement == .endif);
+}
+
+test "JinjaParser: parse if-elif-else statement" {
+    var lexer = JinjaLexer.init("{% if x %}A{% elif y %}B{% else %}C{% endif %}");
+    var tokens = try lexer.tokenize(std.testing.allocator);
+    defer tokens.deinit();
+
+    var parser = JinjaParser.init(tokens.items);
+    var nodes = try parser.parse(std.testing.allocator);
+    defer {
+        for (nodes.items) |*node| {
+            node.deinit(std.testing.allocator);
+        }
+        nodes.deinit();
+    }
+
+    try std.testing.expectEqual(@as(usize, 8), nodes.items.len);
+    try std.testing.expect(nodes.items[0].statement == .if_start);
+    try std.testing.expect(nodes.items[2].statement == .elif);
+    try std.testing.expect(nodes.items[4].statement == .else_block);
+    try std.testing.expect(nodes.items[6].statement == .endif);
+}
+
+test "JinjaValidator: valid for loop with parameter" {
+    const params = [_][]const u8{"messages"};
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        "{% for m in messages %}{{ m }}{% endfor %}",
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    try std.testing.expectEqual(@as(usize, 0), errors.len);
+}
+
+test "JinjaValidator: loop variable in scope" {
+    const params = [_][]const u8{"items"};
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        "{% for item in items %}Name: {{ item.name }}{% endfor %}",
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    // Loop variable 'item' should be valid inside the loop
+    try std.testing.expectEqual(@as(usize, 0), errors.len);
+}
+
+test "JinjaValidator: undefined iterable in for loop" {
+    const params = [_][]const u8{"other"};
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        "{% for item in items %}{{ item }}{% endfor %}",
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    try std.testing.expectEqual(@as(usize, 1), errors.len);
+    try std.testing.expect(std.mem.indexOf(u8, errors[0].message, "Undefined iterable") != null);
+}
+
+test "JinjaValidator: unmatched endfor" {
+    const params = [_][]const u8{};
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        "{% endfor %}",
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    try std.testing.expectEqual(@as(usize, 1), errors.len);
+    try std.testing.expect(std.mem.indexOf(u8, errors[0].message, "Unmatched") != null);
+}
+
+test "JinjaValidator: unclosed for loop" {
+    const params = [_][]const u8{"items"};
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        "{% for item in items %}{{ item }}",
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    try std.testing.expectEqual(@as(usize, 1), errors.len);
+    try std.testing.expect(std.mem.indexOf(u8, errors[0].message, "Unclosed") != null);
+}
+
+test "JinjaValidator: valid if block" {
+    const params = [_][]const u8{"condition"};
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        "{% if condition %}Yes{% endif %}",
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    try std.testing.expectEqual(@as(usize, 0), errors.len);
+}
+
+test "JinjaValidator: unmatched endif" {
+    const params = [_][]const u8{};
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        "{% endif %}",
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    try std.testing.expectEqual(@as(usize, 1), errors.len);
+    try std.testing.expect(std.mem.indexOf(u8, errors[0].message, "Unmatched") != null);
+}
+
+test "JinjaValidator: elif without if" {
+    const params = [_][]const u8{};
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        "{% elif condition %}Yes{% endif %}",
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    try std.testing.expectEqual(@as(usize, 2), errors.len);
+    // First error: elif without if
+    // Second error: unmatched endif (because the if block was never opened)
+}
+
+test "JinjaValidator: else without opening block" {
+    const params = [_][]const u8{};
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        "{% else %}",
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    try std.testing.expectEqual(@as(usize, 1), errors.len);
+    try std.testing.expect(std.mem.indexOf(u8, errors[0].message, "{% else %}") != null);
+}
+
+test "JinjaValidator: nested for loops" {
+    const params = [_][]const u8{ "outer", "inner" };
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        \\{% for o in outer %}
+        \\  {% for i in inner %}
+        \\    {{ o }} {{ i }}
+        \\  {% endfor %}
+        \\{% endfor %}
+    ,
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    // Both loop variables should be valid
+    try std.testing.expectEqual(@as(usize, 0), errors.len);
+}
+
+test "JinjaValidator: for loop with built-in iterable" {
+    const params = [_][]const u8{};
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        "{% for m in ctx.messages %}{{ m }}{% endfor %}",
+        &params,
+    );
+    defer std.testing.allocator.free(errors);
+
+    // ctx is a built-in, should be valid
+    try std.testing.expectEqual(@as(usize, 0), errors.len);
+}
+
+test "JinjaValidator: complete example with loops and conditionals" {
+    const params = [_][]const u8{ "messages", "show_role" };
+    const errors = try validateFunctionPrompt(
+        std.testing.allocator,
+        \\{% for m in messages %}
+        \\  {% if show_role %}
+        \\    {{ _.role(m.role) }}
+        \\  {% endif %}
+        \\  {{ m.content }}
+        \\{% endfor %}
         \\{{ ctx.output_format }}
     ,
         &params,
