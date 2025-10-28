@@ -46,7 +46,7 @@ pub const PythonGenerator = struct {
                 .class_decl => |class| try self.generateClass(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -776,7 +776,7 @@ pub const TypeScriptGenerator = struct {
                 .class_decl => |class| try self.generateInterface(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -1558,7 +1558,7 @@ pub const GoGenerator = struct {
                 .class_decl => |class| try self.generateStruct(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -2101,7 +2101,7 @@ pub const RubyGenerator = struct {
                 .class_decl => |class| try self.generateClass(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -2649,7 +2649,7 @@ pub const RustGenerator = struct {
                 .class_decl => |class| try self.generateStruct(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -3201,7 +3201,7 @@ pub const ElixirGenerator = struct {
                 .class_decl => |class| try self.generateModule(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -3769,7 +3769,7 @@ pub const JavaGenerator = struct {
                 .class_decl => |class| try self.generateClass(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -4371,7 +4371,7 @@ pub const CSharpGenerator = struct {
                 .class_decl => |class| try self.generateClass(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -4911,7 +4911,7 @@ pub const SwiftGenerator = struct {
                 .class_decl => |class| try self.generateStruct(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -5477,7 +5477,7 @@ pub const KotlinGenerator = struct {
                 .class_decl => |class| try self.generateDataClass(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -6025,7 +6025,7 @@ pub const PHPGenerator = struct {
                 .class_decl => |class| try self.generateClass(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -6636,7 +6636,7 @@ pub const ScalaGenerator = struct {
                 .class_decl => |class| try self.generateCaseClass(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }
@@ -7346,7 +7346,7 @@ pub const ZigGenerator = struct {
                 .class_decl => |class| try self.generateStruct(&class),
                 .enum_decl => |enm| try self.generateEnum(&enm),
                 .function_decl => |func| try self.generateFunction(&func),
-                else => {}, // Skip client, test, generator declarations
+                .client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}, // Skip infrastructure declarations
             }
             try self.writeLine("");
         }

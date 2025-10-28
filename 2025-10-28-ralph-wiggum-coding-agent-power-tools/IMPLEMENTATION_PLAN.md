@@ -2432,11 +2432,19 @@ minibaml gen baml_src --zig > generated.zig
   - Verified test_strategies.baml validates correctly via CLI
   - Total test results: 5/5 build steps succeeded; 2/2 test suites passed
 
+#### Tasks Completed:
+- [x] 28.15: Update code generators to handle retry policies
+  - Updated all 13 code generators (Python, TypeScript, Go, Ruby, Rust, Elixir, Java, C#, Swift, Kotlin, PHP, Scala, Zig)
+  - Changed from `else => {}` to explicit exhaustive switch cases
+  - All generators now explicitly skip retry_policy_decl (along with other infrastructure declarations)
+  - Pattern: `.client_decl, .test_decl, .generator_decl, .template_string_decl, .type_alias_decl, .retry_policy_decl => {}`
+  - Rationale: retry_policy declarations are infrastructure/configuration for the runtime, not data types to generate
+  - All tests pass (Build Summary: 5/5 steps succeeded; 2/2 test suites passed)
+
 #### Tasks Remaining:
-- [ ] 28.15: Update code generators to handle retry policies
 - [ ] 28.16: Update documentation
 
-**Progress**: Tasks 28.10, 28.11, 28.12, 28.13, and 28.14 complete! Parser supports fallback and round_robin providers with strategy arrays. Validator validates retry_policy references, client strategy lists, and all declarations. Integration tests verify end-to-end functionality. test_strategies.baml parses and validates successfully. All tests pass. Next steps: code generation and documentation.
+**Progress**: Tasks 28.10, 28.11, 28.12, 28.13, 28.14, and 28.15 complete! Parser supports fallback and round_robin providers with strategy arrays. Validator validates retry_policy references, client strategy lists, and all declarations. Integration tests verify end-to-end functionality. test_strategies.baml parses and validates successfully. Code generators updated to handle retry_policy declarations. All tests pass. Next step: documentation.
 
 **Implementation Details (Completed)**:
 - Added `keyword_retry_policy` to TokenTag enum in lexer
