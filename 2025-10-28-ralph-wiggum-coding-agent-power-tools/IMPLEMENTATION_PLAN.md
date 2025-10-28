@@ -2,7 +2,7 @@
 
 A BAML language implementation in Zig.
 
-## Project Status: PHASE 3 - Class & Enum Parsing
+## Project Status: PHASE 4 - Function Parsing
 
 ---
 
@@ -149,27 +149,47 @@ Value: String, Int, Float, Bool, Null, Array, Object, EnvVar
 
 ---
 
-### 🔵 PHASE 3: Class & Enum Parsing
-**Status**: NOT STARTED
+### ✅ PHASE 3: Class & Enum Parsing
+**Status**: ✅ COMPLETED
 **Goal**: Parse class and enum declarations
 
-#### Tasks:
-- [ ] 3.1: Parse class declaration header
-- [ ] 3.2: Parse class properties with types
-- [ ] 3.3: Parse property attributes (@alias, @description, @skip)
-- [ ] 3.4: Parse class attributes (@@alias, @@dynamic, @@description)
-- [ ] 3.5: Parse enum declaration header
-- [ ] 3.6: Parse enum values
-- [ ] 3.7: Parse enum value attributes
-- [ ] 3.8: Parse enum attributes
-- [ ] 3.9: Add tests for class parsing
-- [ ] 3.10: Add tests for enum parsing
-- [ ] 3.11: Handle docstring comments (`///`)
+#### Tasks Completed:
+- [x] 3.1: Parse class declaration header
+- [x] 3.2: Parse class properties with types
+- [x] 3.3: Parse property attributes (@alias, @description, @skip)
+- [x] 3.4: Parse class attributes (@@alias, @@dynamic, @@description)
+- [x] 3.5: Parse enum declaration header
+- [x] 3.6: Parse enum values
+- [x] 3.7: Parse enum value attributes
+- [x] 3.8: Parse enum attributes
+- [x] 3.9: Add tests for class parsing
+- [x] 3.10: Add tests for enum parsing
+- [x] 3.11: Handle docstring comments (`///`)
 
-**Validation**: Successfully parse:
+**Validation**: ✅ PASSED - Parser successfully parses all class and enum features.
+
+**Implementation Details**:
+- Added `parseClassDecl()` function to parse complete class declarations
+- Added `parseProperty()` function to parse class properties with types and attributes
+- Added `parseEnumDecl()` function to parse complete enum declarations
+- Added `parseEnumValue()` function to parse enum values with attributes
+- Added `skipTriviaCapturingDocstring()` to capture docstrings while skipping trivia
+- Comprehensive test suite with 14 new test cases covering:
+  - Simple classes and enums
+  - Properties with all type variations (primitive, optional, array, map)
+  - Property-level attributes (@alias, @description, etc.)
+  - Class-level attributes (@@dynamic, @@alias, etc.)
+  - Enum values with attributes
+  - Enum-level attributes
+  - Docstring support for classes, enums, properties, and values
+  - Integration tests with lexer + parser
+- All tests pass (`zig build test`)
+
+**Sample Successfully Parsed**:
 ```baml
 /// A person entity
 class Person {
+  /// The person's name
   name string @alias("full_name") @description("The person's name")
   age int? @description("Optional age")
   status Status
@@ -177,10 +197,14 @@ class Person {
   @@dynamic
 }
 
+/// Status enumeration
 enum Status {
+  /// Active state
   Active @alias("currently_active")
   Inactive @description("Not active")
   Pending @skip
+
+  @@dynamic
 }
 ```
 

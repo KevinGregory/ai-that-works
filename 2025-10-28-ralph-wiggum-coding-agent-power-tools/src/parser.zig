@@ -119,7 +119,7 @@ pub const Parser = struct {
         return ParseError.UnexpectedToken;
     }
 
-    /// Skip newlines and comments
+    /// Skip newlines and comments (optionally capture docstring)
     pub fn skipTrivia(self: *Parser) void {
         while (self.peek()) |token| {
             switch (token.tag) {
@@ -129,6 +129,26 @@ pub const Parser = struct {
                 else => break,
             }
         }
+    }
+
+    /// Capture and skip trivia, returning last docstring if present
+    pub fn skipTriviaCapturingDocstring(self: *Parser) ?[]const u8 {
+        var last_docstring: ?[]const u8 = null;
+
+        while (self.peek()) |token| {
+            switch (token.tag) {
+                .docstring => {
+                    last_docstring = token.lexeme;
+                    _ = self.advance();
+                },
+                .newline, .comment, .block_comment => {
+                    _ = self.advance();
+                },
+                else => break,
+            }
+        }
+
+        return last_docstring;
     }
 
     /// Add a parser error
@@ -580,6 +600,176 @@ pub const Parser = struct {
         const var_name = try self.expect(.identifier);
         return ast.Value{ .env_var = var_name.lexeme };
     }
+
+    /// Parse class declaration: class Name { ... }
+    pub fn parseClassDecl(self: *Parser) ParseError!ast.ClassDecl {
+        // Capture docstring before class keyword
+        const docstring = self.skipTriviaCapturingDocstring();
+
+        const class_token = try self.expect(.keyword_class);
+        const location = ast.Location{
+            .line = class_token.line,
+            .column = class_token.column,
+        };
+
+        self.skipTrivia();
+        const name_token = try self.expect(.identifier);
+
+        self.skipTrivia();
+        _ = try self.expect(.lbrace);
+
+        var class_decl = ast.ClassDecl.init(self.allocator, name_token.lexeme, location);
+        class_decl.docstring = docstring;
+
+        errdefer class_decl.deinit(self.allocator);
+
+        // Parse properties and class-level attributes
+        while (!self.check(.rbrace) and !self.isAtEnd()) {
+            self.skipTrivia();
+
+            if (self.check(.rbrace)) break;
+
+            // Check for class-level attribute (@@)
+            if (self.check(.double_at)) {
+                const attr = try self.parseAttribute();
+                try class_decl.attributes.append(attr);
+                continue;
+            }
+
+            // Otherwise, parse property
+            const prop = try self.parseProperty();
+            try class_decl.properties.append(prop);
+        }
+
+        self.skipTrivia();
+        _ = try self.expect(.rbrace);
+
+        return class_decl;
+    }
+
+    /// Parse class property: name Type @attr1 @attr2
+    fn parseProperty(self: *Parser) ParseError!ast.Property {
+        // Capture docstring before property
+        const docstring = self.skipTriviaCapturingDocstring();
+
+        const name_token = try self.expect(.identifier);
+        const location = ast.Location{
+            .line = name_token.line,
+            .column = name_token.column,
+        };
+
+        self.skipTrivia();
+        const type_expr = try self.parseTypeExpr();
+        errdefer {
+            type_expr.deinit(self.allocator);
+            self.allocator.destroy(type_expr);
+        }
+
+        var attributes = std.ArrayList(ast.Attribute).init(self.allocator);
+        errdefer {
+            for (attributes.items) |*attr| {
+                attr.deinit(self.allocator);
+            }
+            attributes.deinit();
+        }
+
+        // Parse property-level attributes
+        while (self.check(.at)) {
+            self.skipTrivia();
+            const attr = try self.parseAttribute();
+            try attributes.append(attr);
+            self.skipTrivia();
+        }
+
+        return ast.Property{
+            .name = name_token.lexeme,
+            .type_expr = type_expr,
+            .attributes = attributes,
+            .docstring = docstring,
+            .location = location,
+        };
+    }
+
+    /// Parse enum declaration: enum Name { ... }
+    pub fn parseEnumDecl(self: *Parser) ParseError!ast.EnumDecl {
+        // Capture docstring before enum keyword
+        const docstring = self.skipTriviaCapturingDocstring();
+
+        const enum_token = try self.expect(.keyword_enum);
+        const location = ast.Location{
+            .line = enum_token.line,
+            .column = enum_token.column,
+        };
+
+        self.skipTrivia();
+        const name_token = try self.expect(.identifier);
+
+        self.skipTrivia();
+        _ = try self.expect(.lbrace);
+
+        var enum_decl = ast.EnumDecl.init(self.allocator, name_token.lexeme, location);
+        enum_decl.docstring = docstring;
+
+        errdefer enum_decl.deinit(self.allocator);
+
+        // Parse enum values and enum-level attributes
+        while (!self.check(.rbrace) and !self.isAtEnd()) {
+            self.skipTrivia();
+
+            if (self.check(.rbrace)) break;
+
+            // Check for enum-level attribute (@@)
+            if (self.check(.double_at)) {
+                const attr = try self.parseAttribute();
+                try enum_decl.attributes.append(attr);
+                continue;
+            }
+
+            // Otherwise, parse enum value
+            const val = try self.parseEnumValue();
+            try enum_decl.values.append(val);
+        }
+
+        self.skipTrivia();
+        _ = try self.expect(.rbrace);
+
+        return enum_decl;
+    }
+
+    /// Parse enum value: ValueName @attr1 @attr2
+    fn parseEnumValue(self: *Parser) ParseError!ast.EnumValue {
+        // Capture docstring before enum value
+        const docstring = self.skipTriviaCapturingDocstring();
+
+        const name_token = try self.expect(.identifier);
+        const location = ast.Location{
+            .line = name_token.line,
+            .column = name_token.column,
+        };
+
+        var attributes = std.ArrayList(ast.Attribute).init(self.allocator);
+        errdefer {
+            for (attributes.items) |*attr| {
+                attr.deinit(self.allocator);
+            }
+            attributes.deinit();
+        }
+
+        // Parse value-level attributes
+        while (self.check(.at)) {
+            self.skipTrivia();
+            const attr = try self.parseAttribute();
+            try attributes.append(attr);
+            self.skipTrivia();
+        }
+
+        return ast.EnumValue{
+            .name = name_token.lexeme,
+            .attributes = attributes,
+            .docstring = docstring,
+            .location = location,
+        };
+    }
 };
 
 /// Parser error information
@@ -987,4 +1177,415 @@ test "Parser: Skip trivia (newlines and comments)" {
     parser.skipTrivia();
     const token = parser.peek().?;
     try std.testing.expect(token.tag == .keyword_class);
+}
+
+test "Parser: Parse simple class" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .keyword_class, .lexeme = "class", .line = 1, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Person", .line = 1, .column = 7 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 1, .column = 14 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 1, .column = 15 },
+        Token{ .tag = .eof, .lexeme = "", .line = 1, .column = 16 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var class_decl = try parser.parseClassDecl();
+    defer class_decl.deinit(allocator);
+
+    try std.testing.expectEqualStrings("Person", class_decl.name);
+    try std.testing.expect(class_decl.properties.items.len == 0);
+    try std.testing.expect(class_decl.attributes.items.len == 0);
+}
+
+test "Parser: Parse class with properties" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .keyword_class, .lexeme = "class", .line = 1, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Person", .line = 1, .column = 7 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 1, .column = 14 },
+        // name string
+        Token{ .tag = .identifier, .lexeme = "name", .line = 2, .column = 3 },
+        Token{ .tag = .type_string, .lexeme = "string", .line = 2, .column = 8 },
+        // age int?
+        Token{ .tag = .identifier, .lexeme = "age", .line = 3, .column = 3 },
+        Token{ .tag = .type_int, .lexeme = "int", .line = 3, .column = 7 },
+        Token{ .tag = .question, .lexeme = "?", .line = 3, .column = 10 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 4, .column = 1 },
+        Token{ .tag = .eof, .lexeme = "", .line = 4, .column = 2 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var class_decl = try parser.parseClassDecl();
+    defer class_decl.deinit(allocator);
+
+    try std.testing.expectEqualStrings("Person", class_decl.name);
+    try std.testing.expect(class_decl.properties.items.len == 2);
+
+    // Check first property: name string
+    const prop1 = class_decl.properties.items[0];
+    try std.testing.expectEqualStrings("name", prop1.name);
+    try std.testing.expect(prop1.type_expr.* == .primitive);
+    try std.testing.expect(prop1.type_expr.primitive == .string);
+
+    // Check second property: age int?
+    const prop2 = class_decl.properties.items[1];
+    try std.testing.expectEqualStrings("age", prop2.name);
+    try std.testing.expect(prop2.type_expr.* == .optional);
+    try std.testing.expect(prop2.type_expr.optional.* == .primitive);
+    try std.testing.expect(prop2.type_expr.optional.primitive == .int);
+}
+
+test "Parser: Parse class property with attributes" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .keyword_class, .lexeme = "class", .line = 1, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Person", .line = 1, .column = 7 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 1, .column = 14 },
+        // email string @alias("email_address")
+        Token{ .tag = .identifier, .lexeme = "email", .line = 2, .column = 3 },
+        Token{ .tag = .type_string, .lexeme = "string", .line = 2, .column = 9 },
+        Token{ .tag = .at, .lexeme = "@", .line = 2, .column = 16 },
+        Token{ .tag = .identifier, .lexeme = "alias", .line = 2, .column = 17 },
+        Token{ .tag = .lparen, .lexeme = "(", .line = 2, .column = 22 },
+        Token{ .tag = .string_literal, .lexeme = "email_address", .line = 2, .column = 23 },
+        Token{ .tag = .rparen, .lexeme = ")", .line = 2, .column = 38 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 3, .column = 1 },
+        Token{ .tag = .eof, .lexeme = "", .line = 3, .column = 2 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var class_decl = try parser.parseClassDecl();
+    defer class_decl.deinit(allocator);
+
+    try std.testing.expect(class_decl.properties.items.len == 1);
+    const prop = class_decl.properties.items[0];
+    try std.testing.expectEqualStrings("email", prop.name);
+    try std.testing.expect(prop.attributes.items.len == 1);
+
+    const attr = prop.attributes.items[0];
+    try std.testing.expectEqualStrings("alias", attr.name);
+    try std.testing.expect(!attr.is_class_level);
+    try std.testing.expect(attr.args.items.len == 1);
+    try std.testing.expectEqualStrings("email_address", attr.args.items[0].string);
+}
+
+test "Parser: Parse class with class-level attribute" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .keyword_class, .lexeme = "class", .line = 1, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Person", .line = 1, .column = 7 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 1, .column = 14 },
+        Token{ .tag = .identifier, .lexeme = "name", .line = 2, .column = 3 },
+        Token{ .tag = .type_string, .lexeme = "string", .line = 2, .column = 8 },
+        // @@dynamic
+        Token{ .tag = .double_at, .lexeme = "@@", .line = 3, .column = 3 },
+        Token{ .tag = .identifier, .lexeme = "dynamic", .line = 3, .column = 5 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 4, .column = 1 },
+        Token{ .tag = .eof, .lexeme = "", .line = 4, .column = 2 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var class_decl = try parser.parseClassDecl();
+    defer class_decl.deinit(allocator);
+
+    try std.testing.expectEqualStrings("Person", class_decl.name);
+    try std.testing.expect(class_decl.properties.items.len == 1);
+    try std.testing.expect(class_decl.attributes.items.len == 1);
+
+    const attr = class_decl.attributes.items[0];
+    try std.testing.expectEqualStrings("dynamic", attr.name);
+    try std.testing.expect(attr.is_class_level);
+}
+
+test "Parser: Parse class with docstring" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .docstring, .lexeme = " A person entity", .line = 1, .column = 1 },
+        Token{ .tag = .keyword_class, .lexeme = "class", .line = 2, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Person", .line = 2, .column = 7 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 2, .column = 14 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 3, .column = 1 },
+        Token{ .tag = .eof, .lexeme = "", .line = 3, .column = 2 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var class_decl = try parser.parseClassDecl();
+    defer class_decl.deinit(allocator);
+
+    try std.testing.expectEqualStrings("Person", class_decl.name);
+    try std.testing.expect(class_decl.docstring != null);
+    try std.testing.expectEqualStrings(" A person entity", class_decl.docstring.?);
+}
+
+test "Parser: Parse simple enum" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .keyword_enum, .lexeme = "enum", .line = 1, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Status", .line = 1, .column = 6 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 1, .column = 13 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 1, .column = 14 },
+        Token{ .tag = .eof, .lexeme = "", .line = 1, .column = 15 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var enum_decl = try parser.parseEnumDecl();
+    defer enum_decl.deinit(allocator);
+
+    try std.testing.expectEqualStrings("Status", enum_decl.name);
+    try std.testing.expect(enum_decl.values.items.len == 0);
+    try std.testing.expect(enum_decl.attributes.items.len == 0);
+}
+
+test "Parser: Parse enum with values" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .keyword_enum, .lexeme = "enum", .line = 1, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Status", .line = 1, .column = 6 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 1, .column = 13 },
+        Token{ .tag = .identifier, .lexeme = "Active", .line = 2, .column = 3 },
+        Token{ .tag = .identifier, .lexeme = "Inactive", .line = 3, .column = 3 },
+        Token{ .tag = .identifier, .lexeme = "Pending", .line = 4, .column = 3 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 5, .column = 1 },
+        Token{ .tag = .eof, .lexeme = "", .line = 5, .column = 2 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var enum_decl = try parser.parseEnumDecl();
+    defer enum_decl.deinit(allocator);
+
+    try std.testing.expectEqualStrings("Status", enum_decl.name);
+    try std.testing.expect(enum_decl.values.items.len == 3);
+
+    try std.testing.expectEqualStrings("Active", enum_decl.values.items[0].name);
+    try std.testing.expectEqualStrings("Inactive", enum_decl.values.items[1].name);
+    try std.testing.expectEqualStrings("Pending", enum_decl.values.items[2].name);
+}
+
+test "Parser: Parse enum value with attributes" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .keyword_enum, .lexeme = "enum", .line = 1, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Status", .line = 1, .column = 6 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 1, .column = 13 },
+        // Active @alias("currently_active") @description("Active status")
+        Token{ .tag = .identifier, .lexeme = "Active", .line = 2, .column = 3 },
+        Token{ .tag = .at, .lexeme = "@", .line = 2, .column = 10 },
+        Token{ .tag = .identifier, .lexeme = "alias", .line = 2, .column = 11 },
+        Token{ .tag = .lparen, .lexeme = "(", .line = 2, .column = 16 },
+        Token{ .tag = .string_literal, .lexeme = "currently_active", .line = 2, .column = 17 },
+        Token{ .tag = .rparen, .lexeme = ")", .line = 2, .column = 35 },
+        Token{ .tag = .at, .lexeme = "@", .line = 2, .column = 37 },
+        Token{ .tag = .identifier, .lexeme = "description", .line = 2, .column = 38 },
+        Token{ .tag = .lparen, .lexeme = "(", .line = 2, .column = 49 },
+        Token{ .tag = .string_literal, .lexeme = "Active status", .line = 2, .column = 50 },
+        Token{ .tag = .rparen, .lexeme = ")", .line = 2, .column = 65 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 3, .column = 1 },
+        Token{ .tag = .eof, .lexeme = "", .line = 3, .column = 2 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var enum_decl = try parser.parseEnumDecl();
+    defer enum_decl.deinit(allocator);
+
+    try std.testing.expect(enum_decl.values.items.len == 1);
+    const val = enum_decl.values.items[0];
+    try std.testing.expectEqualStrings("Active", val.name);
+    try std.testing.expect(val.attributes.items.len == 2);
+
+    const attr1 = val.attributes.items[0];
+    try std.testing.expectEqualStrings("alias", attr1.name);
+    try std.testing.expectEqualStrings("currently_active", attr1.args.items[0].string);
+
+    const attr2 = val.attributes.items[1];
+    try std.testing.expectEqualStrings("description", attr2.name);
+    try std.testing.expectEqualStrings("Active status", attr2.args.items[0].string);
+}
+
+test "Parser: Parse enum with enum-level attribute" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .keyword_enum, .lexeme = "enum", .line = 1, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Status", .line = 1, .column = 6 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 1, .column = 13 },
+        Token{ .tag = .identifier, .lexeme = "Active", .line = 2, .column = 3 },
+        // @@dynamic
+        Token{ .tag = .double_at, .lexeme = "@@", .line = 3, .column = 3 },
+        Token{ .tag = .identifier, .lexeme = "dynamic", .line = 3, .column = 5 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 4, .column = 1 },
+        Token{ .tag = .eof, .lexeme = "", .line = 4, .column = 2 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var enum_decl = try parser.parseEnumDecl();
+    defer enum_decl.deinit(allocator);
+
+    try std.testing.expectEqualStrings("Status", enum_decl.name);
+    try std.testing.expect(enum_decl.values.items.len == 1);
+    try std.testing.expect(enum_decl.attributes.items.len == 1);
+
+    const attr = enum_decl.attributes.items[0];
+    try std.testing.expectEqualStrings("dynamic", attr.name);
+    try std.testing.expect(attr.is_class_level);
+}
+
+test "Parser: Parse enum with docstring" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .docstring, .lexeme = " Status enumeration", .line = 1, .column = 1 },
+        Token{ .tag = .keyword_enum, .lexeme = "enum", .line = 2, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Status", .line = 2, .column = 6 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 2, .column = 13 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 3, .column = 1 },
+        Token{ .tag = .eof, .lexeme = "", .line = 3, .column = 2 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var enum_decl = try parser.parseEnumDecl();
+    defer enum_decl.deinit(allocator);
+
+    try std.testing.expectEqualStrings("Status", enum_decl.name);
+    try std.testing.expect(enum_decl.docstring != null);
+    try std.testing.expectEqualStrings(" Status enumeration", enum_decl.docstring.?);
+}
+
+test "Parser: Parse enum value with docstring" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .keyword_enum, .lexeme = "enum", .line = 1, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Status", .line = 1, .column = 6 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 1, .column = 13 },
+        Token{ .tag = .docstring, .lexeme = " Active state", .line = 2, .column = 3 },
+        Token{ .tag = .identifier, .lexeme = "Active", .line = 3, .column = 3 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 4, .column = 1 },
+        Token{ .tag = .eof, .lexeme = "", .line = 4, .column = 2 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var enum_decl = try parser.parseEnumDecl();
+    defer enum_decl.deinit(allocator);
+
+    try std.testing.expect(enum_decl.values.items.len == 1);
+    const val = enum_decl.values.items[0];
+    try std.testing.expectEqualStrings("Active", val.name);
+    try std.testing.expect(val.docstring != null);
+    try std.testing.expectEqualStrings(" Active state", val.docstring.?);
+}
+
+test "Parser: Parse class property with docstring" {
+    const allocator = std.testing.allocator;
+    const tokens = [_]Token{
+        Token{ .tag = .keyword_class, .lexeme = "class", .line = 1, .column = 1 },
+        Token{ .tag = .identifier, .lexeme = "Person", .line = 1, .column = 7 },
+        Token{ .tag = .lbrace, .lexeme = "{", .line = 1, .column = 14 },
+        Token{ .tag = .docstring, .lexeme = " The person's name", .line = 2, .column = 3 },
+        Token{ .tag = .identifier, .lexeme = "name", .line = 3, .column = 3 },
+        Token{ .tag = .type_string, .lexeme = "string", .line = 3, .column = 8 },
+        Token{ .tag = .rbrace, .lexeme = "}", .line = 4, .column = 1 },
+        Token{ .tag = .eof, .lexeme = "", .line = 4, .column = 2 },
+    };
+
+    var parser = Parser.init(allocator, &tokens);
+    defer parser.deinit();
+
+    var class_decl = try parser.parseClassDecl();
+    defer class_decl.deinit(allocator);
+
+    try std.testing.expect(class_decl.properties.items.len == 1);
+    const prop = class_decl.properties.items[0];
+    try std.testing.expectEqualStrings("name", prop.name);
+    try std.testing.expect(prop.docstring != null);
+    try std.testing.expectEqualStrings(" The person's name", prop.docstring.?);
+}
+
+test "Parser: Integration - Parse class from lexer output" {
+    const allocator = std.testing.allocator;
+
+    // Simple BAML class
+    const source =
+        \\class Person {
+        \\  name string
+        \\  age int?
+        \\  email string @alias("email_address")
+        \\}
+    ;
+
+    var lex = Lexer.init(allocator, source);
+    defer lex.deinit();
+
+    const tokens = try lex.tokenize();
+    defer allocator.free(tokens);
+
+    var parser = Parser.init(allocator, tokens);
+    defer parser.deinit();
+
+    var class_decl = try parser.parseClassDecl();
+    defer class_decl.deinit(allocator);
+
+    try std.testing.expectEqualStrings("Person", class_decl.name);
+    try std.testing.expect(class_decl.properties.items.len == 3);
+
+    // Verify properties
+    try std.testing.expectEqualStrings("name", class_decl.properties.items[0].name);
+    try std.testing.expectEqualStrings("age", class_decl.properties.items[1].name);
+    try std.testing.expectEqualStrings("email", class_decl.properties.items[2].name);
+
+    // Verify email has alias attribute
+    try std.testing.expect(class_decl.properties.items[2].attributes.items.len == 1);
+    try std.testing.expectEqualStrings("alias", class_decl.properties.items[2].attributes.items[0].name);
+}
+
+test "Parser: Integration - Parse enum from lexer output" {
+    const allocator = std.testing.allocator;
+
+    // Simple BAML enum
+    const source =
+        \\enum Status {
+        \\  Active
+        \\  Inactive
+        \\  Pending
+        \\}
+    ;
+
+    var lex = Lexer.init(allocator, source);
+    defer lex.deinit();
+
+    const tokens = try lex.tokenize();
+    defer allocator.free(tokens);
+
+    var parser = Parser.init(allocator, tokens);
+    defer parser.deinit();
+
+    var enum_decl = try parser.parseEnumDecl();
+    defer enum_decl.deinit(allocator);
+
+    try std.testing.expectEqualStrings("Status", enum_decl.name);
+    try std.testing.expect(enum_decl.values.items.len == 3);
+
+    // Verify values
+    try std.testing.expectEqualStrings("Active", enum_decl.values.items[0].name);
+    try std.testing.expectEqualStrings("Inactive", enum_decl.values.items[1].name);
+    try std.testing.expectEqualStrings("Pending", enum_decl.values.items[2].name);
 }
