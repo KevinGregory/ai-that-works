@@ -2,7 +2,7 @@
 
 A BAML language implementation in Zig.
 
-## Project Status: PHASE 28 - Client Strategies (retry_policy, fallback, round-robin) 🚧 IN PROGRESS
+## Project Status: ALL PHASES COMPLETE ✅
 
 ---
 
@@ -1744,9 +1744,9 @@ minibaml gen baml_src --kotlin > generated.kt
 
 ---
 
-## Current Milestone: PHASE 27 - COMPLETED ✅
+## Current Milestone: ALL PHASES COMPLETED ✅
 
-**Achievements**:
+**Final Achievements**:
 - ✅ Complete lexer with 150+ test cases
 - ✅ Full AST implementation with all BAML constructs
 - ✅ Comprehensive parser for all BAML syntax
@@ -1818,6 +1818,15 @@ minibaml gen baml_src --kotlin > generated.kt
   - Argument count and type validation
   - Unknown filter warnings
   - 15 comprehensive filter tests
+- ✅ Client Strategies (Phase 28)
+  - retry_policy declarations with exponential_backoff and constant_delay strategies
+  - Fallback provider for sequential client fallback chains
+  - Round-robin provider for load balancing across clients
+  - Retry policy reference validation in clients
+  - Client strategy list validation (undefined clients detection)
+  - 11 integration tests covering all strategy scenarios
+  - All code generators updated to handle retry_policy declarations
+  - Complete documentation for production resilience patterns
 - ✅ TypeBuilder code generation for @@dynamic types (Phase 12.2)
   - Detects @@dynamic attribute on classes and enums
   - Generates DynamicClassBuilder with add_property()
@@ -2348,8 +2357,8 @@ minibaml gen baml_src --zig > generated.zig
 
 ---
 
-### 🚧 PHASE 28: Client Strategies (retry_policy, fallback, round-robin)
-**Status**: 🚧 IN PROGRESS
+### ✅ PHASE 28: Client Strategies (retry_policy, fallback, round-robin)
+**Status**: ✅ COMPLETED
 **Goal**: Implement BAML client strategies for resilience and load balancing
 
 #### Tasks Completed:
@@ -2441,10 +2450,26 @@ minibaml gen baml_src --zig > generated.zig
   - Rationale: retry_policy declarations are infrastructure/configuration for the runtime, not data types to generate
   - All tests pass (Build Summary: 5/5 steps succeeded; 2/2 test suites passed)
 
-#### Tasks Remaining:
-- [ ] 28.16: Update documentation
+#### Tasks Completed:
+- [x] 28.16: Update documentation
+  - Updated docs/reference.md with comprehensive retry_policy and client strategies documentation
+  - Added retry policy declaration syntax (constant_delay and exponential_backoff strategies)
+  - Added fallback and round-robin client strategies documentation
+  - Added validation error documentation (undefined retry_policy, undefined client in strategy, invalid strategy field)
+  - Updated docs/getting-started.md with retry policies and client strategies examples
+  - Updated README.md with client strategies feature, validation list, and project status
+  - All documentation complete and accurate
 
-**Progress**: Tasks 28.10, 28.11, 28.12, 28.13, 28.14, and 28.15 complete! Parser supports fallback and round_robin providers with strategy arrays. Validator validates retry_policy references, client strategy lists, and all declarations. Integration tests verify end-to-end functionality. test_strategies.baml parses and validates successfully. Code generators updated to handle retry_policy declarations. All tests pass. Next step: documentation.
+**Validation**: ✅ PASSED - Phase 28 fully complete with comprehensive documentation.
+
+**Progress**: All tasks 28.1-28.16 complete! Phase 28 delivers production-ready client strategies:
+- retry_policy declarations with exponential_backoff and constant_delay strategies
+- Fallback provider for resilient client chains
+- Round-robin provider for load balancing
+- Full validation for retry_policy references and client strategy lists
+- Comprehensive integration tests
+- Complete documentation coverage
+- All tests passing (2/2 test suites, 5/5 build steps)
 
 **Implementation Details (Completed)**:
 - Added `keyword_retry_policy` to TokenTag enum in lexer

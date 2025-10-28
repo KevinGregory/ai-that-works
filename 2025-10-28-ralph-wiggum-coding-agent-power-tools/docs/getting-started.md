@@ -188,6 +188,99 @@ function Ask(question: string) -> string {
 
 **Environment Variables**: Use `env.VAR_NAME` to reference environment variables securely.
 
+### 5. Retry Policies and Client Strategies
+
+For production applications, you can define retry policies and use advanced client strategies for resilience and load balancing.
+
+#### Retry Policies
+
+Define how clients should retry failed requests:
+
+```baml
+retry_policy SmartRetry {
+  max_retries 3
+  strategy {
+    type exponential_backoff
+    delay_ms 200
+    multiplier 1.5
+    max_delay_ms 10000
+  }
+}
+
+client<llm> MyOpenAI {
+  provider "openai"
+  retry_policy SmartRetry
+  options {
+    model "gpt-4"
+    api_key env.OPENAI_API_KEY
+  }
+}
+```
+
+#### Fallback Strategy
+
+Try multiple clients in sequence for resilience:
+
+```baml
+client<llm> PrimaryClient {
+  provider "openai"
+  options {
+    model "gpt-4"
+    api_key env.OPENAI_API_KEY
+  }
+}
+
+client<llm> BackupClient {
+  provider "anthropic"
+  options {
+    model "claude-sonnet-4"
+    api_key env.ANTHROPIC_API_KEY
+  }
+}
+
+// Fallback: tries Primary first, then Backup if it fails
+client<llm> ResilientClient {
+  provider fallback
+  retry_policy SmartRetry
+  options {
+    strategy [
+      PrimaryClient
+      BackupClient
+    ]
+  }
+}
+```
+
+#### Round-Robin Strategy
+
+Distribute requests evenly across multiple clients:
+
+```baml
+// Round-robin: rotates through clients for load balancing
+client<llm> LoadBalanced {
+  provider round_robin
+  options {
+    strategy [
+      PrimaryClient
+      BackupClient
+    ]
+    start 0
+  }
+}
+```
+
+Use these strategies in functions:
+
+```baml
+function ProcessText(text: string) -> Person {
+  client ResilientClient  // Uses fallback strategy
+  prompt #"
+    Extract person from: {{ text }}
+    {{ ctx.output_format }}
+  "#
+}
+```
+
 ## Generating Code
 
 ### Generate Python (Pydantic)
@@ -444,7 +537,8 @@ Now that you understand the basics:
 4. **Try Advanced Features**:
    - Jinja template validation
    - Dynamic types with `@@dynamic`
-   - Multiple client configurations
+   - Retry policies with exponential backoff
+   - Fallback and round-robin client strategies
    - TypeScript generation
 
 ## Getting Help

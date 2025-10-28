@@ -417,6 +417,7 @@ class Person {
 - `enum` - Define an enumeration
 - `function` - Define an LLM function
 - `client` - Define an LLM client
+- `retry_policy` - Define a retry policy for clients
 - `test` - Define a test case
 - `generator` - Define code generator settings
 - `template_string` - Define a reusable template
@@ -613,6 +614,220 @@ client<llm> ClientName {
 **Environment Variables:**
 ```baml
 api_key env.OPENAI_API_KEY
+```
+
+---
+
+#### Retry Policy Declaration
+
+Retry policies define how clients should retry failed requests to LLM providers.
+
+```baml
+retry_policy MyRetryPolicy {
+  max_retries 3
+  strategy {
+    type exponential_backoff
+    delay_ms 200
+    multiplier 1.5
+    max_delay_ms 10000
+  }
+}
+```
+
+**Syntax:**
+```
+retry_policy PolicyName {
+  max_retries <number>
+  strategy {
+    type <strategy_type>
+    <strategy_parameters>
+  }
+}
+```
+
+**Strategy Types:**
+
+1. **constant_delay** - Fixed delay between retries
+   ```baml
+   retry_policy SimpleRetry {
+     max_retries 3
+     strategy {
+       type constant_delay
+       delay_ms 1000
+     }
+   }
+   ```
+
+2. **exponential_backoff** - Exponentially increasing delay
+   ```baml
+   retry_policy SmartRetry {
+     max_retries 5
+     strategy {
+       type exponential_backoff
+       delay_ms 200         // Initial delay
+       multiplier 1.5       // Delay multiplier
+       max_delay_ms 10000   // Maximum delay
+     }
+   }
+   ```
+
+**Using Retry Policies:**
+
+Reference a retry policy in a client:
+```baml
+client<llm> MyClient {
+  provider "openai"
+  retry_policy MyRetryPolicy
+  options {
+    model "gpt-4"
+    api_key env.OPENAI_API_KEY
+  }
+}
+```
+
+---
+
+#### Client Strategies (Fallback and Round-Robin)
+
+BAML supports advanced client strategies for resilience and load balancing.
+
+##### Fallback Strategy
+
+Try multiple clients in sequence until one succeeds:
+
+```baml
+// Define individual clients
+client<llm> PrimaryClient {
+  provider "openai"
+  options {
+    model "gpt-4"
+    api_key env.OPENAI_API_KEY
+  }
+}
+
+client<llm> BackupClient {
+  provider "anthropic"
+  options {
+    model "claude-sonnet-4"
+    api_key env.ANTHROPIC_API_KEY
+  }
+}
+
+// Create fallback client
+client<llm> ResilientClient {
+  provider fallback
+  retry_policy MyRetryPolicy
+  options {
+    strategy [
+      PrimaryClient
+      BackupClient
+    ]
+  }
+}
+```
+
+**Behavior:**
+- Tries `PrimaryClient` first
+- If it fails (after retries), tries `BackupClient`
+- Returns first successful response
+- If all clients fail, returns error
+
+##### Round-Robin Strategy
+
+Distribute requests evenly across multiple clients:
+
+```baml
+client<llm> LoadBalancedClient {
+  provider round_robin
+  options {
+    strategy [
+      ClientA
+      ClientB
+      ClientC
+    ]
+    start 0  // Starting index
+  }
+}
+```
+
+**Behavior:**
+- Rotates through clients in order
+- Request 1 → ClientA
+- Request 2 → ClientB
+- Request 3 → ClientC
+- Request 4 → ClientA (cycles back)
+- Useful for load balancing and rate limit management
+
+**Complete Example:**
+
+```baml
+retry_policy AggressiveRetry {
+  max_retries 5
+  strategy {
+    type exponential_backoff
+    delay_ms 100
+    multiplier 2.0
+    max_delay_ms 5000
+  }
+}
+
+client<llm> OpenAIGPT4 {
+  provider "openai"
+  options {
+    model "gpt-4"
+    api_key env.OPENAI_API_KEY
+  }
+}
+
+client<llm> AnthropicClaude {
+  provider "anthropic"
+  options {
+    model "claude-sonnet-4"
+    api_key env.ANTHROPIC_API_KEY
+  }
+}
+
+client<llm> OpenAIGPT3 {
+  provider "openai"
+  options {
+    model "gpt-3.5-turbo"
+    api_key env.OPENAI_API_KEY
+  }
+}
+
+// Fallback with retry policy
+client<llm> ProductionClient {
+  provider fallback
+  retry_policy AggressiveRetry
+  options {
+    strategy [
+      OpenAIGPT4
+      AnthropicClaude
+      OpenAIGPT3
+    ]
+  }
+}
+
+// Round-robin for load balancing
+client<llm> DistributedClient {
+  provider round_robin
+  options {
+    strategy [
+      OpenAIGPT4
+      AnthropicClaude
+    ]
+    start 0
+  }
+}
+
+// Use in function
+function ExtractData(text: string) -> Person {
+  client ProductionClient
+  prompt #"
+    Extract person from: {{ text }}
+    {{ ctx.output_format }}
+  "#
+}
 ```
 
 ---
@@ -1437,6 +1652,107 @@ class Person {
 test TestGreet {
   functions [NonExistent]  // ❌ ERROR: Undefined function in test: NonExistent
   args { }
+}
+```
+
+---
+
+#### Undefined Retry Policy in Client
+
+**Error:** Client references a retry_policy that doesn't exist.
+
+```baml
+client<llm> MyClient {
+  provider "openai"
+  retry_policy NonExistentPolicy  // ❌ ERROR: Undefined retry_policy: NonExistentPolicy
+  options {
+    model "gpt-4"
+  }
+}
+```
+
+**Fix:** Define the retry policy first:
+```baml
+retry_policy NonExistentPolicy {
+  max_retries 3
+  strategy {
+    type constant_delay
+    delay_ms 1000
+  }
+}
+
+client<llm> MyClient {
+  provider "openai"
+  retry_policy NonExistentPolicy  // ✓ Valid
+  options {
+    model "gpt-4"
+  }
+}
+```
+
+---
+
+#### Undefined Client in Strategy List
+
+**Error:** Fallback or round-robin client references a client that doesn't exist.
+
+```baml
+client<llm> ResilientClient {
+  provider fallback
+  options {
+    strategy [
+      ClientA
+      NonExistentClient  // ❌ ERROR: Undefined client in strategy list: NonExistentClient
+    ]
+  }
+}
+```
+
+**Fix:** Define all clients before referencing them:
+```baml
+client<llm> ClientA {
+  provider "openai"
+  options { model "gpt-4" }
+}
+
+client<llm> ClientB {
+  provider "anthropic"
+  options { model "claude-sonnet-4" }
+}
+
+client<llm> ResilientClient {
+  provider fallback
+  options {
+    strategy [
+      ClientA
+      ClientB  // ✓ Valid - both clients are defined
+    ]
+  }
+}
+```
+
+---
+
+#### Invalid Strategy Field
+
+**Error:** Strategy field is not an array or contains non-string values.
+
+```baml
+client<llm> BadClient {
+  provider fallback
+  options {
+    strategy "not-an-array"  // ❌ ERROR: Strategy field must be an array
+  }
+}
+```
+
+**Fix:** Use an array of client names:
+```baml
+client<llm> GoodClient {
+  provider fallback
+  options {
+    strategy [ClientA, ClientB]  // ✓ Valid
+  }
 }
 ```
 

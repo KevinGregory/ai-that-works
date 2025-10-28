@@ -10,9 +10,10 @@ minibaml is a from-scratch implementation of the BAML language specification, de
 
 - 🚀 **Complete BAML Implementation**: Full support for classes, enums, functions, clients, tests, and generators
 - 🔍 **Advanced Type System**: Primitives, arrays, maps, optionals, unions, and literal types with circular dependency detection
-- 🎯 **Multi-Language Code Generation**: Generate idiomatic code for 12+ languages
+- 🎯 **Multi-Language Code Generation**: Generate idiomatic code for 13+ languages
 - 🌳 **Multi-File Projects**: Automatic namespace merging for complex projects
 - 🧪 **Jinja Template Validation**: Parse and validate Jinja templates with loop and conditional support
+- 🔄 **Client Strategies**: Retry policies, fallback chains, and round-robin load balancing for production resilience
 - ⚡ **Fast & Reliable**: Built with Zig for maximum performance and safety
 - 📝 **Pretty Formatter**: Format BAML code with consistent style
 - 🔒 **Type-Safe**: Comprehensive validation with detailed error messages
@@ -237,6 +238,50 @@ Generate a TypeBuilder module:
 minibaml gen example.baml --typebuilder > type_builder.py
 ```
 
+### Client Strategies for Production
+
+Define retry policies and use advanced strategies for resilience:
+
+```baml
+retry_policy SmartRetry {
+  max_retries 3
+  strategy {
+    type exponential_backoff
+    delay_ms 200
+    multiplier 1.5
+    max_delay_ms 10000
+  }
+}
+
+client<llm> Primary {
+  provider "openai"
+  options { model "gpt-4" api_key env.OPENAI_API_KEY }
+}
+
+client<llm> Backup {
+  provider "anthropic"
+  options { model "claude-sonnet-4" api_key env.ANTHROPIC_API_KEY }
+}
+
+// Fallback strategy: tries Primary, then Backup if it fails
+client<llm> Resilient {
+  provider fallback
+  retry_policy SmartRetry
+  options {
+    strategy [Primary Backup]
+  }
+}
+
+// Round-robin strategy: distributes load evenly
+client<llm> LoadBalanced {
+  provider round_robin
+  options {
+    strategy [Primary Backup]
+    start 0
+  }
+}
+```
+
 ## Language-Specific Output
 
 ### Python (Pydantic)
@@ -358,6 +403,8 @@ minibaml performs comprehensive validation:
 - ✅ Jinja template variable validation
 - ✅ Attribute usage validation
 - ✅ Loop and conditional statement validation
+- ✅ Retry policy reference validation
+- ✅ Client strategy list validation
 
 ### Error Messages
 
@@ -388,9 +435,9 @@ For detailed documentation, see:
 - ✅ Phase 12: TypeBuilder and Jinja validation
 - ✅ Phase 13: Complete documentation suite
 - ✅ Phase 14: Advanced Jinja features (loops, conditionals)
-- ✅ Phase 15-24: Code generators for 12 languages
-- ✅ Phase 25: Project README and documentation completion
-- ✅ Phase 26: Zig code generator (13th language, meta-feature!)
+- ✅ Phase 15-26: Code generators for 13 languages (Python, TypeScript, Go, Ruby, Rust, Elixir, Java, C#, Swift, Kotlin, PHP, Scala, Zig)
+- ✅ Phase 27: Advanced Jinja filter validation (7 common filters with argument validation)
+- ✅ Phase 28: Client strategies (retry_policy, fallback, round-robin)
 
 All tests passing with comprehensive coverage.
 
