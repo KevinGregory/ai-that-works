@@ -41,6 +41,7 @@ pub const SwiftGenerator = codegen.SwiftGenerator;
 pub const KotlinGenerator = codegen.KotlinGenerator;
 pub const PHPGenerator = codegen.PHPGenerator;
 pub const ScalaGenerator = codegen.ScalaGenerator;
+pub const ZigGenerator = codegen.ZigGenerator;
 pub const MultiFileProject = multifile.MultiFileProject;
 pub const JinjaLexer = jinja.JinjaLexer;
 pub const JinjaParser = jinja.JinjaParser;

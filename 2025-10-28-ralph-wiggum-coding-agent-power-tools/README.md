@@ -1,6 +1,6 @@
 # minibaml
 
-A high-performance BAML (Boundary ML) language implementation written in Zig, featuring a complete lexer, parser, type system, and code generators for 12+ programming languages.
+A high-performance BAML (Boundary ML) language implementation written in Zig, featuring a complete lexer, parser, type system, and code generators for 13+ programming languages.
 
 ## Overview
 
@@ -35,6 +35,7 @@ Code generation for the following languages is fully implemented and tested:
 | Kotlin | `--kotlin`, `-kt` | ✅ |
 | PHP 8.1+ | `--php` | ✅ |
 | Scala (circe) | `--scala` | ✅ |
+| Zig | `--zig` | ✅ |
 
 ## Installation
 
@@ -151,6 +152,7 @@ minibaml gen <path> [opts]        Alias for generate
 --kotlin, -kt                     Generate Kotlin code
 --php                             Generate PHP code
 --scala                           Generate Scala code
+--zig                             Generate Zig code
 --typebuilder, -tb                Generate Python TypeBuilder module
 ```
 
@@ -303,6 +305,28 @@ pub enum Status {
 }
 ```
 
+### Zig
+
+```zig
+const std = @import("std");
+
+pub const Person = struct {
+    name: []const u8,
+    age: ?i64,
+    email: []const u8,
+    tags: []const []const u8,
+};
+
+pub const Status = enum {
+    Active,
+    Inactive,
+};
+
+pub fn Greet(p: Person) ![]const u8 {
+    return error.NotImplemented;
+}
+```
+
 ## Features
 
 ### Type System
@@ -364,7 +388,9 @@ For detailed documentation, see:
 - ✅ Phase 12: TypeBuilder and Jinja validation
 - ✅ Phase 13: Complete documentation suite
 - ✅ Phase 14: Advanced Jinja features (loops, conditionals)
-- ✅ Phase 15-24: Code generators for 12+ languages
+- ✅ Phase 15-24: Code generators for 12 languages
+- ✅ Phase 25: Project README and documentation completion
+- ✅ Phase 26: Zig code generator (13th language, meta-feature!)
 
 All tests passing with comprehensive coverage.
 

@@ -54,6 +54,7 @@ pub fn main() !void {
         var use_kotlin = false;
         var use_php = false;
         var use_scala = false;
+        var use_zig = false;
         var typebuilder_only = false;
 
         // Parse arguments to separate paths from flags
@@ -84,6 +85,8 @@ pub fn main() !void {
                     use_php = true;
                 } else if (std.mem.eql(u8, arg, "--scala")) {
                     use_scala = true;
+                } else if (std.mem.eql(u8, arg, "--zig")) {
+                    use_zig = true;
                 } else if (std.mem.eql(u8, arg, "--typebuilder") or std.mem.eql(u8, arg, "-tb")) {
                     typebuilder_only = true;
                 }
@@ -98,7 +101,7 @@ pub fn main() !void {
             return;
         }
 
-        try generateCommand(allocator, paths.items, use_typescript, use_go, use_ruby, use_rust, use_elixir, use_java, use_csharp, use_swift, use_kotlin, use_php, use_scala, typebuilder_only);
+        try generateCommand(allocator, paths.items, use_typescript, use_go, use_ruby, use_rust, use_elixir, use_java, use_csharp, use_swift, use_kotlin, use_php, use_scala, use_zig, typebuilder_only);
     } else if (std.mem.eql(u8, command, "parse")) {
         if (args.len < 3) {
             try printError("parse command requires at least one file argument", "minibaml parse <file.baml> [file2.baml ...]");
@@ -142,6 +145,7 @@ fn printUsage() void {
         \\  --kotlin, -kt                     Generate Kotlin code
         \\  --php                             Generate PHP code
         \\  --scala                           Generate Scala code
+        \\  --zig                             Generate Zig code
         \\  --typebuilder, -tb                Generate Python TypeBuilder module only
         \\
         \\Global Options:
@@ -566,7 +570,7 @@ fn formatCommand(allocator: std.mem.Allocator, filename: []const u8) !void {
     try std.fs.File.stdout().writeAll(buffer.items);
 }
 
-fn generateCommand(allocator: std.mem.Allocator, paths: []const []const u8, use_typescript: bool, use_go: bool, use_ruby: bool, use_rust: bool, use_elixir: bool, use_java: bool, use_csharp: bool, use_swift: bool, use_kotlin: bool, use_php: bool, use_scala: bool, typebuilder_only: bool) !void {
+fn generateCommand(allocator: std.mem.Allocator, paths: []const []const u8, use_typescript: bool, use_go: bool, use_ruby: bool, use_rust: bool, use_elixir: bool, use_java: bool, use_csharp: bool, use_swift: bool, use_kotlin: bool, use_php: bool, use_scala: bool, use_zig: bool, typebuilder_only: bool) !void {
     var buffer = std.ArrayList(u8){};
     defer buffer.deinit(allocator);
 
@@ -825,6 +829,30 @@ fn generateCommand(allocator: std.mem.Allocator, paths: []const []const u8, use_
         }
     } else if (use_scala) {
         var gen = minibaml.ScalaGenerator.init(allocator, &buffer);
+
+        switch (load_mode) {
+            .directory => {
+                var project = minibaml.MultiFileProject.init(allocator);
+                defer project.deinit();
+                try project.loadDirectory(paths[0]);
+                const merged_ast = project.getMergedAst();
+                try gen.generate(merged_ast);
+            },
+            .single_file => {
+                var result = try parseFile(allocator, paths[0]);
+                defer result.deinit();
+                try gen.generate(&result.tree);
+            },
+            .multiple_files => {
+                var project = minibaml.MultiFileProject.init(allocator);
+                defer project.deinit();
+                try project.loadFiles(paths);
+                const merged_ast = project.getMergedAst();
+                try gen.generate(merged_ast);
+            },
+        }
+    } else if (use_zig) {
+        var gen = minibaml.ZigGenerator.init(allocator, &buffer);
 
         switch (load_mode) {
             .directory => {
