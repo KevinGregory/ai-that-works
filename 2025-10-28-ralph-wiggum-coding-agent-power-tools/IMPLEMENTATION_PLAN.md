@@ -2,7 +2,7 @@
 
 A BAML language implementation in Zig.
 
-## Project Status: PHASE 25 - README and Documentation ✅ COMPLETED
+## Project Status: PHASE 26 - Zig Code Generation ✅ COMPLETED
 
 ---
 
