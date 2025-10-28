@@ -1,0 +1,347 @@
+# minibaml Implementation Plan
+
+A BAML language implementation in Zig.
+
+## Project Status: PHASE 1 - Lexer/Tokenizer
+
+---
+
+## Priority Order & Milestones
+
+### ✅ PHASE 0: Project Structure & Foundation
+**Status**: ✅ COMPLETED
+**Goal**: Create basic project structure and verify build system works
+
+- [x] 0.1: Create src/ directory structure
+- [x] 0.2: Create basic main.zig with hello world
+- [x] 0.3: Create root.zig module stub
+- [x] 0.4: Verify `zig build` works
+- [x] 0.5: Verify `zig build test` works
+- [x] 0.6: Verify `zig build run` works
+
+**Validation**: ✅ `zig build run` outputs "Hello, minibaml!"
+
+---
+
+### 🔵 PHASE 1: Lexer/Tokenizer (HIGHEST PRIORITY)
+**Status**: NOT STARTED
+**Goal**: Tokenize BAML source code into a stream of tokens
+
+#### Token Types Needed:
+```zig
+// Keywords
+class, enum, function, client, test, generator, template_string, type
+
+// Primitive Types
+string, int, float, bool, null, image, audio, video, pdf, map
+
+// Symbols
+@, @@, {, }, [, ], (, ), |, ?, <, >, :, ,, #, "
+
+// Literals
+STRING_LITERAL, INT_LITERAL, FLOAT_LITERAL, BOOL_LITERAL
+IDENTIFIER, COMMENT, BLOCK_STRING
+
+// Special
+EOF, NEWLINE, WHITESPACE (maybe skip)
+```
+
+#### Tasks:
+- [ ] 1.1: Define Token enum with all token types
+- [ ] 1.2: Create Lexer struct with source input and position tracking
+- [ ] 1.3: Implement keyword recognition
+- [ ] 1.4: Implement identifier and type name parsing
+- [ ] 1.5: Implement string literal parsing (quoted `"..."`)
+- [ ] 1.6: Implement block string parsing (`#"..."#` with nesting)
+- [ ] 1.7: Implement number literal parsing (int/float)
+- [ ] 1.8: Implement comment parsing (`//`, `///`, `{# #}`)
+- [ ] 1.9: Implement symbol/operator parsing
+- [ ] 1.10: Implement unquoted string parsing (for simple values)
+- [ ] 1.11: Add comprehensive lexer tests
+- [ ] 1.12: Create test BAML file and verify tokenization
+
+**Validation**: Lexer can tokenize a complete BAML file with all token types. Test file:
+```baml
+// Test comment
+class Person {
+  name string
+  age int?
+}
+
+enum Status {
+  Active
+  Inactive
+}
+
+function Greet(p: Person) -> string {
+  client "openai/gpt-4"
+  prompt #"
+    Say hello to {{ p.name }}
+  "#
+}
+```
+
+---
+
+### 🔵 PHASE 2: AST & Parser Foundation
+**Status**: NOT STARTED
+**Goal**: Parse tokens into an Abstract Syntax Tree
+
+#### AST Node Types:
+```zig
+// Top-level declarations
+ClassDecl, EnumDecl, FunctionDecl, ClientDecl, TestDecl, GeneratorDecl
+TemplateStringDecl, TypeAliasDecl
+
+// Type expressions
+TypeExpr: Primitive, Array, Map, Optional, Union, Named, Literal
+
+// Class/Enum components
+Property, EnumValue, Attribute
+
+// Function components
+Parameter, PromptBlock
+
+// Others
+Identifier, StringLiteral, NumberLiteral
+```
+
+#### Tasks:
+- [ ] 2.1: Define AST node structures
+- [ ] 2.2: Create Parser struct with token stream
+- [ ] 2.3: Implement parser utilities (peek, advance, expect, etc.)
+- [ ] 2.4: Implement type expression parsing (with precedence)
+  - [ ] 2.4a: Parse primitive types
+  - [ ] 2.4b: Parse array types `Type[]`
+  - [ ] 2.4c: Parse optional types `Type?`
+  - [ ] 2.4d: Parse union types `Type | Type`
+  - [ ] 2.4e: Parse map types `map<K, V>`
+  - [ ] 2.4f: Parse literal types `"value" | 1 | true`
+- [ ] 2.5: Parse attribute syntax `@attr(args)` and `@@attr(args)`
+- [ ] 2.6: Parse comments and docstrings
+- [ ] 2.7: Add parser error handling with line/column info
+- [ ] 2.8: Add parser recovery (continue parsing after errors)
+
+**Validation**: Can parse type expressions and attributes without full declarations
+
+---
+
+### 🔵 PHASE 3: Class & Enum Parsing
+**Status**: NOT STARTED
+**Goal**: Parse class and enum declarations
+
+#### Tasks:
+- [ ] 3.1: Parse class declaration header
+- [ ] 3.2: Parse class properties with types
+- [ ] 3.3: Parse property attributes (@alias, @description, @skip)
+- [ ] 3.4: Parse class attributes (@@alias, @@dynamic, @@description)
+- [ ] 3.5: Parse enum declaration header
+- [ ] 3.6: Parse enum values
+- [ ] 3.7: Parse enum value attributes
+- [ ] 3.8: Parse enum attributes
+- [ ] 3.9: Add tests for class parsing
+- [ ] 3.10: Add tests for enum parsing
+- [ ] 3.11: Handle docstring comments (`///`)
+
+**Validation**: Successfully parse:
+```baml
+/// A person entity
+class Person {
+  name string @alias("full_name") @description("The person's name")
+  age int? @description("Optional age")
+  status Status
+
+  @@dynamic
+}
+
+enum Status {
+  Active @alias("currently_active")
+  Inactive @description("Not active")
+  Pending @skip
+}
+```
+
+---
+
+### 🔵 PHASE 4: Function Parsing
+**Status**: NOT STARTED
+**Goal**: Parse function declarations with prompts
+
+#### Tasks:
+- [ ] 4.1: Parse function declaration header
+- [ ] 4.2: Parse function parameters with types
+- [ ] 4.3: Parse return type
+- [ ] 4.4: Parse client specification (short form: string literal)
+- [ ] 4.5: Parse prompt block (block string with Jinja)
+- [ ] 4.6: Parse function attributes
+- [ ] 4.7: Add function parsing tests
+- [ ] 4.8: Handle multiline prompts correctly
+
+**Validation**: Successfully parse:
+```baml
+function ExtractPerson(text: string, image: image) -> Person {
+  client "anthropic/claude-sonnet-4"
+  prompt #"
+    {{ _.role("user") }}
+    Extract person info from: {{ text }}
+    Image: {{ image }}
+
+    {{ ctx.output_format }}
+  "#
+}
+```
+
+---
+
+### 🔵 PHASE 5: Client & Template String Parsing
+**Status**: NOT STARTED
+**Goal**: Parse client and template_string declarations
+
+#### Tasks:
+- [ ] 5.1: Parse client<llm> declaration header
+- [ ] 5.2: Parse client provider
+- [ ] 5.3: Parse client options block
+- [ ] 5.4: Parse nested options (headers, etc.)
+- [ ] 5.5: Parse environment variable references (env.VAR_NAME)
+- [ ] 5.6: Parse template_string declarations
+- [ ] 5.7: Parse template_string parameters
+- [ ] 5.8: Add client parsing tests
+- [ ] 5.9: Add template_string parsing tests
+
+**Validation**: Successfully parse:
+```baml
+client<llm> MyClient {
+  provider "openai"
+  options {
+    model "gpt-4"
+    api_key env.OPENAI_API_KEY
+    temperature 0.7
+    base_url "https://api.openai.com/v1"
+  }
+}
+
+template_string FormatMessages(msgs: Message[]) #"
+  {% for m in msgs %}
+    {{ _.role(m.role) }}
+    {{ m.content }}
+  {% endfor %}
+"#
+```
+
+---
+
+### 🔵 PHASE 6: Test & Generator Parsing
+**Status**: NOT STARTED
+**Goal**: Parse test and generator declarations
+
+#### Tasks:
+- [ ] 6.1: Parse test declaration header
+- [ ] 6.2: Parse functions list
+- [ ] 6.3: Parse args block with nested values
+- [ ] 6.4: Parse test attributes (@@check, @@assert)
+- [ ] 6.5: Parse generator declaration
+- [ ] 6.6: Parse generator options
+- [ ] 6.7: Add test parsing tests
+- [ ] 6.8: Add generator parsing tests
+
+**Validation**: Successfully parse complete test and generator blocks
+
+---
+
+### 🔵 PHASE 7: Type System & Validation
+**Status**: NOT STARTED
+**Goal**: Implement type checking and validation
+
+#### Tasks:
+- [ ] 7.1: Create type registry/symbol table
+- [ ] 7.2: Resolve type references
+- [ ] 7.3: Validate type compatibility
+- [ ] 7.4: Check for circular dependencies in types
+- [ ] 7.5: Validate function parameter types
+- [ ] 7.6: Validate return types
+- [ ] 7.7: Check for duplicate definitions
+- [ ] 7.8: Validate attribute usage
+- [ ] 7.9: Add semantic analysis tests
+
+**Validation**: Detect and report type errors in BAML code
+
+---
+
+### 🔵 PHASE 8: Pretty Printer & Formatter
+**Status**: NOT STARTED
+**Goal**: Format BAML code (like `baml fmt`)
+
+#### Tasks:
+- [ ] 8.1: Create AST printer
+- [ ] 8.2: Implement indentation logic
+- [ ] 8.3: Format type expressions
+- [ ] 8.4: Format declarations
+- [ ] 8.5: Preserve comments
+- [ ] 8.6: Add formatter tests
+- [ ] 8.7: Create `minibaml fmt` command
+
+**Validation**: Round-trip: parse -> format -> parse produces identical AST
+
+---
+
+### 🔵 PHASE 9: Basic Code Generation (Python)
+**Status**: NOT STARTED
+**Goal**: Generate Python/Pydantic code from BAML
+
+#### Tasks:
+- [ ] 9.1: Create code generator framework
+- [ ] 9.2: Generate Python class definitions from BAML classes
+- [ ] 9.3: Generate Python enums
+- [ ] 9.4: Generate type hints for unions, optionals, arrays
+- [ ] 9.5: Generate function stubs
+- [ ] 9.6: Add code generation tests
+- [ ] 9.7: Verify generated Python code is valid
+
+**Validation**: Generate valid Python code that passes type checking
+
+---
+
+### 🔵 PHASE 10: CLI & File I/O
+**Status**: NOT STARTED
+**Goal**: Create usable CLI tool
+
+#### Tasks:
+- [ ] 10.1: Implement file reading
+- [ ] 10.2: Implement `minibaml parse <file>` command
+- [ ] 10.3: Implement `minibaml fmt <file>` command
+- [ ] 10.4: Implement `minibaml check <file>` command
+- [ ] 10.5: Add helpful error messages with line/column info
+- [ ] 10.6: Add --version flag
+- [ ] 10.7: Add --help text
+- [ ] 10.8: Handle multiple input files
+
+**Validation**: CLI tool can parse, format, and check real BAML files
+
+---
+
+## Future Phases (Lower Priority)
+
+### PHASE 11: Multi-file Support
+- Import/module system
+- Cross-file type references
+
+### PHASE 12: Advanced Features
+- Jinja template parsing/validation
+- Dynamic types support
+- Streaming support
+- Client registry
+
+### PHASE 13: Additional Code Generators
+- TypeScript generation
+- Go generation
+- Ruby generation
+
+---
+
+## Current Milestone: PHASE 0 - Project Setup
+
+**Next Steps**:
+1. Create src/ directory structure
+2. Write basic main.zig
+3. Write basic root.zig
+4. Verify build system works
