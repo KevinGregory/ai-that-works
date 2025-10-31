@@ -12,11 +12,22 @@
 
 <div align="center">
 <h2>🦄 <strong>Next Episode</strong></h2>
-<h3><strong>Ralph Wiggum under the hood: Coding Agent Power Tools</strong></h3>
-<p><strong>Tuesday, October 28, 2025 at 10 AM PST</strong></p>
-<p><em>We've talked a lot about how to use context engineering to get more out of coding agents. In this week's episode, we're going to dive deep on the Ralph Wiggum Technique and why this totally different approach to coding agents can change the way you code. We'll explore using ralph for Greenfield projects, Refactoring projects, Generating specifications. Surprise surprise, the answer is better context engineering.</em></p>
+<h3><strong>Event-driven agentic loops</strong></h3>
+<p><strong>Wednesday, November 5, 2025 at 10 AM PST</strong></p>
+<p><em>How an event sourcing architecture enables clear type-safe behavior, interrupts, queueing, and more for complex interactive agents.
 
-<a href="https://lu.ma/ralphloop" target="_blank">
+In this episode, we'll explore:
+
+1. Event sourcing fundamentals for agents
+2. Type-safe event handling patterns
+3. Implementing interrupts and queueing
+4. Building resilient agent workflows
+5. Real-world examples and best practices
+
+Come ready to dive deep into the architecture that powers complex interactive agents!
+</em></p>
+
+<a href="https://luma.com/event-driven-agents" target="_blank">
 <img src="https://img.shields.io/badge/🦄_REGISTER_NOW-Join_Live_Session-ff4444?style=for-the-badge&logo=calendar" alt="Register Now">
 </a>
 
@@ -100,10 +111,33 @@ Before joining, get familiar with our toolkit:
         <div style="margin-bottom: 2px;">
           <span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold;">UPCOMING</span>
         </div>
+        <div style="color: #666; font-size: 13px; margin-bottom: 4px;">2025-11-05</div>
+        <div style="font-size: 16px; line-height: 1.3; margin-bottom: 6px;"><strong>#30</strong>: Event-driven agentic loops</div>
+        <div style="font-size: 13px; color: #666;">
+          <a href="./2025-11-05-event-driven-agents">code</a> • <a href="https://luma.com/event-driven-agents">register</a>
+        </div>
+      </div>
+    </td><td><div style="padding: 8px 0; line-height: 1.5;">How an event sourcing architecture enables clear type-safe behavior, interrupts, queueing, and more for complex interactive agents.
+
+In this episode, we'll explore:
+
+1. Event sourcing fundamentals for agents
+2. Type-safe event handling patterns
+3. Implementing interrupts and queueing
+4. Building resilient agent workflows
+5. Real-world examples and best practices
+
+Come ready to dive deep into the architecture that powers complex interactive agents!
+</div></td></tr>
+<tr><td>
+      <div style="padding: 8px 0;">
+        <div style="margin-bottom: 2px;">
+          <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold;">PAST</span>
+        </div>
         <div style="color: #666; font-size: 13px; margin-bottom: 4px;">2025-10-28</div>
         <div style="font-size: 16px; line-height: 1.3; margin-bottom: 6px;"><strong>#29</strong>: Ralph Wiggum under the hood: Coding Agent Power Tools</div>
         <div style="font-size: 13px; color: #666;">
-          <a href="./2025-10-28-ralph-wiggum-coding-agent-power-tools">code</a> • <a href="https://lu.ma/ralphloop">register</a>
+          <a href="https://www.youtube.com/watch?v=fOPvAPdqgPo">watch</a> • <a href="./2025-10-28-ralph-wiggum-coding-agent-power-tools">code</a>
         </div>
       </div>
     </td><td><div style="padding: 8px 0; line-height: 1.5;">We've talked a lot about how to use context engineering to get more out of coding agents. In this week's episode, we're going to dive deep on the Ralph Wiggum Technique and why this totally different approach to coding agents can change the way you code. We'll explore using ralph for Greenfield projects, Refactoring projects, Generating specifications. Surprise surprise, the answer is better context engineering.</div></td></tr>

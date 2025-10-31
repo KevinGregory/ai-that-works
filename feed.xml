@@ -16,8 +16,25 @@
       <link>https://github.com/ai-that-works/ai-that-works</link>
     </image>
     <atom:link href="https://github.com/ai-that-works/ai-that-works/raw/main/feed.xml" rel="self" type="application/rss+xml" />
-    <lastBuildDate>Tue, 21 Oct 2025 23:53:18 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 30 Oct 2025 06:01:16 GMT</lastBuildDate>
     <ttl>1440</ttl>
+    <item>
+      <title><![CDATA[Ralph Wiggum under the hood: Coding Agent Power Tools]]></title>
+      <description><![CDATA[We've talked a lot about how to use context engineering to get more out of coding agents. In this week's episode, we're going to dive deep on the Ralph Wiggum Technique and why this totally different approach to coding agents can change the way you code. We'll explore using ralph for Greenfield projects, Refactoring projects, Generating specifications. Surprise surprise, the answer is better context engineering.
+
+Watch: https://www.youtube.com/watch?v=fOPvAPdqgPo
+Code: https://github.com/ai-that-works/ai-that-works/tree/main/2025-10-28-ralph-wiggum-coding-agent-power-tools
+Event: https://lu.ma/ralphloop
+
+AI That Works - Weekly conversations about production-ready AI engineering with live coding and Q&A.]]></description>
+      <link>https://www.youtube.com/watch?v=fOPvAPdqgPo</link>
+      <guid isPermaLink="false">aitw-029</guid>
+      <pubDate>Tue, 28 Oct 2025 18:00:00 GMT</pubDate>
+      <category>Technology</category>
+      <category>Software Engineering</category>
+      <category>Artificial Intelligence</category>
+      <enclosure url="https://www.youtube.com/watch?v=fOPvAPdqgPo" type="video/youtube" />
+    </item>
     <item>
       <title><![CDATA[Agentic RAG + Context Engineering]]></title>
       <description><![CDATA[In this conversation, Vaibhav Gupta and Dex explore the intricacies of building an Agentic Retrieval-Augmented Generation (RAG) system. They discuss the differences between traditional RAG and Agentic RAG, emphasizing the flexibility and decision-making capabilities of the latter. The conversation includes a live demo of a coding agent, insights into the coding architecture, challenges faced during tool implementation, and the iterative process of refining the system. They also touch on the integration of web search functionalities and the evaluation of tool effectiveness, providing a comprehensive overview of the development process and the underlying principles of Agentic RAG systems. In this conversation, Vaibhav Gupta and Dex discuss the intricacies of building dynamic AI systems, focusing on tool implementation, user interface optimization, and model performance. They explore the importance of reinforcement learning in training models, the challenges of debugging AI systems, and the significance of writing code to enhance understanding and efficiency in AI development. The dialogue emphasizes the balance between different AI approaches and the necessity of real use cases in building effective solutions.

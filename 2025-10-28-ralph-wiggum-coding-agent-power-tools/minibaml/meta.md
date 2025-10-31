@@ -5,8 +5,12 @@
 "event_type": "episode"
 "season": 2
 "episode": 29
+"media":
+  "url": "https://www.youtube.com/watch?v=fOPvAPdqgPo"
+  "type": "video/youtube"
 "links":
   "code": "https://github.com/ai-that-works/ai-that-works/tree/main/2025-10-28-ralph-wiggum-coding-agent-power-tools"
+  "youtube": "https://www.youtube.com/watch?v=fOPvAPdqgPo"
 "event_link": "https://lu.ma/ralphloop"
 "eventDate": "2025-10-28T18:00:00Z"
 ---

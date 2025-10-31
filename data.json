@@ -1,6 +1,26 @@
 {
   "episodes": [
     {
+      "folder": "2025-11-05-event-driven-agents",
+      "guid": "aitw-030",
+      "title": "Event-driven agentic loops",
+      "description": "How an event sourcing architecture enables clear type-safe behavior, interrupts, queueing, and more for complex interactive agents.\n\nIn this episode, we'll explore:\n\n1. Event sourcing fundamentals for agents\n2. Type-safe event handling patterns\n3. Implementing interrupts and queueing\n4. Building resilient agent workflows\n5. Real-world examples and best practices\n\nCome ready to dive deep into the architecture that powers complex interactive agents!\n",
+      "event_link": "https://luma.com/event-driven-agents",
+      "eventDate": "2025-11-05T18:00:00.000Z",
+      "event_type": "episode",
+      "media": {
+        "url": null,
+        "type": "video/youtube"
+      },
+      "links": {
+        "code": "https://github.com/ai-that-works/ai-that-works/tree/main/2025-11-05-event-driven-agents"
+      },
+      "season": 2,
+      "episode": 30,
+      "isPast": false,
+      "isWorkshop": false
+    },
+    {
       "folder": "2025-10-28-ralph-wiggum-coding-agent-power-tools",
       "guid": "aitw-029",
       "title": "Ralph Wiggum under the hood: Coding Agent Power Tools",
@@ -8,12 +28,17 @@
       "event_link": "https://lu.ma/ralphloop",
       "eventDate": "2025-10-28T18:00:00Z",
       "event_type": "episode",
+      "media": {
+        "url": "https://www.youtube.com/watch?v=fOPvAPdqgPo",
+        "type": "video/youtube"
+      },
       "links": {
+        "youtube": "https://www.youtube.com/watch?v=fOPvAPdqgPo",
         "code": "https://github.com/ai-that-works/ai-that-works/tree/main/2025-10-28-ralph-wiggum-coding-agent-power-tools"
       },
       "season": 2,
       "episode": 29,
-      "isPast": false,
+      "isPast": true,
       "isWorkshop": false
     },
     {
@@ -664,15 +689,15 @@
     }
   ],
   "meta": {
-    "totalEpisodes": 32,
-    "completedEpisodes": 28,
+    "totalEpisodes": 33,
+    "completedEpisodes": 29,
     "upcomingEpisodes": 1,
     "workshops": 3,
     "seasons": [
       1,
       2
     ],
-    "lastUpdated": "2025-10-21T23:53:18.951Z",
+    "lastUpdated": "2025-10-30T06:01:16.070Z",
     "generatedBy": "validate-metadata.ts"
   }
 }
