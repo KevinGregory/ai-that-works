@@ -6,12 +6,16 @@
 ## Topics Covered
 
 - Crash course on Git Worktrees
-- File and Spec Management, tradeoffs in hardlinks vs symlinks
+- File and Spec Management, in-tree vs out of tree
 - tmux as a building block for collaborative agent workflows
 
-## Episode Highlights
+## Links
 
-This one's gonna feel a little different but as always we'll do some deep technical diagrams, get hands on with the code, and give you actionable tricks you can use to get more (maybe even better?) results from AI tools.
+- git objects database - https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
+- git worktree command docs - https://git-scm.com/docs/git-worktree
+- multiclaude project - https://github.com/dexhorthy/multiclaude
+- vibe-kanban - https://www.vibekanban.com/
+- conductor - https://conductor.build/
 
 ## Resources
 
@@ -20,8 +24,9 @@ This one's gonna feel a little different but as always we'll do some deep techni
 
 ## Whiteboards
 
-<!-- Add whiteboard images here -->
+<img width="1973" height="1665" alt="image" src="https://github.com/user-attachments/assets/57be3ab0-3a8f-4d28-9e78-8a50afc97990" />
 
-## Links
+<img width="3306" height="2949" alt="image" src="https://github.com/user-attachments/assets/d7004766-f3ac-4f99-9060-ba54dc9b7426" />
 
-<!-- Add relevant links here -->
+<img width="2020" height="1149" alt="Screenshot 2025-12-09 at 11 34 48 AM" src="https://github.com/user-attachments/assets/dd394f18-9d3c-46ad-b253-97d04b0a7cbd" />
+
