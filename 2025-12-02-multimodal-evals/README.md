@@ -1,8 +1,8 @@
 # Multimodal Evals: Receipt Data Extraction
 
-[Video](https://www.youtube.com/watch?v=OpM-G3WNH4g)
+[Video](https://www.youtube.com/watch?v=jzhVo0iAX_I)
 
-[![Multimodal Evals](https://img.youtube.com/vi/OpM-G3WNH4g/0.jpg)](https://www.youtube.com/watch?v=OpM-G3WNH4g)
+[![Multimodal Evals](https://www.youtube.com/watch?v=jzhVo0iAX_I/0.jpg)](https://www.youtube.com/watch?v=jzhVo0iAX_I)
 
 A complete system for evaluating vision LLM performance on structured data extraction from receipt images. This module demonstrates **runtime evaluations**—deterministic checks that validate LLM outputs without using another LLM as a judge.
 
