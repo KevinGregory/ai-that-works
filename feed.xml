@@ -16,8 +16,28 @@
       <link>https://github.com/ai-that-works/ai-that-works</link>
     </image>
     <atom:link href="https://github.com/ai-that-works/ai-that-works/raw/main/feed.xml" rel="self" type="application/rss+xml" />
-    <lastBuildDate>Fri, 09 Jan 2026 01:25:49 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 09 Jan 2026 01:39:01 GMT</lastBuildDate>
     <ttl>1440</ttl>
+    <item>
+      <title><![CDATA[Understanding Latency in AI Applications]]></title>
+      <description><![CDATA[A deep dive into performance engineering for AI applications. We explore all the bottlenecks
+in agent systems - from prompt caching and token optimization to semantic streaming and UI design.
+Learn how to make your agents feel faster through strategic latency reduction and smart UX choices.
+
+
+Watch: https://www.youtube.com/watch?v=wadVIkJnjQE
+Code: https://github.com/ai-that-works/ai-that-works/tree/main/2026-01-06-understanding-latency
+Event: https://luma.com/12-factors-to-coding-agents
+
+AI That Works - Weekly conversations about production-ready AI engineering with live coding and Q&A.]]></description>
+      <link>https://www.youtube.com/watch?v=wadVIkJnjQE</link>
+      <guid isPermaLink="false">aitw-039</guid>
+      <pubDate>Tue, 06 Jan 2026 18:00:00 GMT</pubDate>
+      <category>Technology</category>
+      <category>Software Engineering</category>
+      <category>Artificial Intelligence</category>
+      <enclosure url="https://www.youtube.com/watch?v=wadVIkJnjQE" type="video/youtube" />
+    </item>
     <item>
       <title><![CDATA[Founding Boundary: Vaibhav's Journey]]></title>
       <description><![CDATA[End of year special part 2: Vaibhav shares his journey from building card games in 7th grade

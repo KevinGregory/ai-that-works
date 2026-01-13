@@ -10,6 +10,29 @@
 
 </div>
 
+<div align="center">
+<h2>🦄 <strong>Next Episode</strong></h2>
+<h3><strong>Applying 12-Factor Principles to Coding Agent SDKs</strong></h3>
+<p><strong>Tuesday, January 13, 2026 at 10 AM PST</strong></p>
+<p><em>We've done a lot of talking in the last few months about prompting coding agents and context engineering w/ markdown files, but today we'll talk about how to squeeze even more out of agents by using agent loops as smaller elements of a deterministic workflow.
+
+In this session we'll cover:
+
+- using the claude agent sdk to stitch together microagent workflows
+- accumulating user rules across context windows
+- json state and structured outputs with zod
+- session continuation and forking vs. direct compaction
+</em></p>
+
+<a href="https://luma.com/12-factors-to-coding-agents" target="_blank">
+<img src="https://img.shields.io/badge/🦄_REGISTER_NOW-Join_Live_Session-ff4444?style=for-the-badge&logo=calendar" alt="Register Now">
+</a>
+
+</div>
+
+---
+
+
 ---
 
 ## **What We're About**
@@ -80,6 +103,41 @@ Before joining, get familiar with our toolkit:
 </tr>
 </thead>
 <tbody>
+<tr><td>
+      <div style="padding: 8px 0;">
+        <div style="margin-bottom: 2px;">
+          <span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold;">UPCOMING</span>
+        </div>
+        <div style="color: #666; font-size: 13px; margin-bottom: 4px;">2026-01-13</div>
+        <div style="font-size: 16px; line-height: 1.3; margin-bottom: 6px;"><strong>#40</strong>: Applying 12-Factor Principles to Coding Agent SDKs</div>
+        <div style="font-size: 13px; color: #666;">
+          <a href="./2026-01-13-applying-12-factor-principles-to-coding-agent-sdks">code</a> • <a href="https://luma.com/12-factors-to-coding-agents">register</a>
+        </div>
+      </div>
+    </td><td><div style="padding: 8px 0; line-height: 1.5;">We've done a lot of talking in the last few months about prompting coding agents and context engineering w/ markdown files, but today we'll talk about how to squeeze even more out of agents by using agent loops as smaller elements of a deterministic workflow.
+
+In this session we'll cover:
+
+- using the claude agent sdk to stitch together microagent workflows
+- accumulating user rules across context windows
+- json state and structured outputs with zod
+- session continuation and forking vs. direct compaction
+</div></td></tr>
+<tr><td>
+      <div style="padding: 8px 0;">
+        <div style="margin-bottom: 2px;">
+          <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold;">PAST</span>
+        </div>
+        <div style="color: #666; font-size: 13px; margin-bottom: 4px;">2026-01-06</div>
+        <div style="font-size: 16px; line-height: 1.3; margin-bottom: 6px;"><strong>#39</strong>: Understanding Latency in AI Applications</div>
+        <div style="font-size: 13px; color: #666;">
+          <a href="https://www.youtube.com/watch?v=wadVIkJnjQE">watch</a> • <a href="./2026-01-06-understanding-latency">code</a>
+        </div>
+      </div>
+    </td><td><div style="padding: 8px 0; line-height: 1.5;">A deep dive into performance engineering for AI applications. We explore all the bottlenecks
+in agent systems - from prompt caching and token optimization to semantic streaming and UI design.
+Learn how to make your agents feel faster through strategic latency reduction and smart UX choices.
+</div></td></tr>
 <tr><td>
       <div style="padding: 8px 0;">
         <div style="margin-bottom: 2px;">

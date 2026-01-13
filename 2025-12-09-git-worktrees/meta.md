@@ -11,11 +11,11 @@ description: |
 event_link: https://lu.ma/baml
 eventDate: 2025-12-09T18:00:00Z
 media:
-  url: https://www.youtube.com/watch?v=jzhVo0iAX_I
+  url: https://www.youtube.com/watch?v=OpM-G3WNH4g
   type: video/youtube
 links:
   code: https://github.com/ai-that-works/ai-that-works/tree/main/2025-12-09-git-worktrees
-  youtube: https://www.youtube.com/watch?v=jzhVo0iAX_I
+  youtube: https://www.youtube.com/watch?v=OpM-G3WNH4g
 season: 2
 episode: 34
 event_type: episode
