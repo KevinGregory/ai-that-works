@@ -33,3 +33,10 @@
 
 <img width="2020" height="1149" alt="Screenshot 2025-12-09 at 11 34 48 AM" src="https://github.com/user-attachments/assets/dd394f18-9d3c-46ad-b253-97d04b0a7cbd" />
 
+### Example Coding workflow
+
+This diagram shows how you can use multiple agents, each working in their own `git worktree` to brainstorm multiple solutions.  
+First use an AI agent to help you research the problem and generate relevant specs, then create a feature branch and kick off multiple agents.
+The key is that you then use your own judgement or another coding agent to synthesize the best answers and perform the update in your feature branch.
+
+<img width="1037" height="506" alt="image" src="https://github.com/user-attachments/assets/2a22bfd9-9e39-46ad-95f6-ef2153abd9ea" />
